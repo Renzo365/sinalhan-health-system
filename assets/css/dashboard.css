@@ -1,0 +1,238 @@
+/* assets/css/dashboard.css */
+
+/* Dashboard Summary Metrics Cards */
+.metric-card {
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow var(--transition-speed) ease;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background-color: var(--primary-color);
+    opacity: 0;
+    transition: opacity var(--transition-speed) ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+.metric-card:hover::before {
+    opacity: 1;
+}
+
+.metric-details h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.metric-details .metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+
+.metric-icon-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    transition: all var(--transition-speed) ease;
+}
+
+/* Card theme variations */
+.metric-card.patients-card .metric-icon-box {
+    background-color: rgba(13, 115, 119, 0.1);
+    color: var(--primary-color);
+}
+.metric-card.patients-card::before {
+    background-color: var(--primary-color);
+}
+
+.metric-card.appointments-card .metric-icon-box {
+    background-color: rgba(74, 144, 217, 0.1);
+    color: var(--accent-color);
+}
+.metric-card.appointments-card::before {
+    background-color: var(--accent-color);
+}
+
+.metric-card.queue-card .metric-icon-box {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #E6A100;
+}
+.metric-card.queue-card::before {
+    background-color: var(--warning-color);
+}
+
+.metric-card.active-users-card .metric-icon-box {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: var(--success-color);
+}
+.metric-card.active-users-card::before {
+    background-color: var(--success-color);
+}
+
+/* Hover rotation animation for icons */
+.metric-card:hover .metric-icon-box {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Charts Containers */
+.chart-container-custom {
+    position: relative;
+    height: 320px;
+    width: 100%;
+}
+
+/* Recent Activity List */
+.activity-feed {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.activity-feed-item {
+    display: flex;
+    gap: 15px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.activity-feed-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.activity-feed-item:first-child {
+    padding-top: 0;
+}
+
+.activity-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    margin-top: 5px;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 4px rgba(13, 115, 119, 0.15);
+}
+
+.activity-marker.module-patient { background-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(13, 115, 119, 0.15); }
+.activity-marker.module-health { background-color: var(--info-color); box-shadow: 0 0 0 4px rgba(23, 162, 184, 0.15); }
+.activity-marker.module-appointment { background-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.15); }
+.activity-marker.module-queue { background-color: var(--warning-color); box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.2); }
+.activity-marker.module-auth { background-color: var(--success-color); box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.15); }
+
+.activity-content {
+    flex-grow: 1;
+}
+
+.activity-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.activity-details {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.activity-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Online Staff List */
+.online-users-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.online-users-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.online-users-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.online-users-item:first-child {
+    padding-top: 0;
+}
+
+.online-user-details {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.online-user-avatar {
+    width: 38px;
+    height: 38px;
+    background-color: var(--border-color);
+    border-radius: 50%;
+    color: var(--primary-dark);
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.online-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.online-user-role {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.online-status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--success-color);
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+}
