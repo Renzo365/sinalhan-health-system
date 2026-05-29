@@ -49,13 +49,15 @@ $clinicNameSetting = get_setting($loginPdo, 'clinic_name', 'Barangay Sinalhan');
 
     <div class="login-container">
         <div class="login-header">
-            <div class="login-logo" style="overflow: hidden;">
-                <?php if (!empty($clinicLogoSetting)): ?>
-                    <img src="<?= BASE_URL . $clinicLogoSetting ?>" alt="Logo" style="height: 100%; width: 100%; object-fit: contain; padding: 8px;">
-                <?php else: ?>
+            <?php if (!empty($clinicLogoSetting)): ?>
+                <div class="login-logo" style="overflow: hidden; background: #ffffff; border: 2px solid var(--primary-color);">
+                    <img src="<?= BASE_URL . $clinicLogoSetting ?>" alt="Logo" style="height: 100%; width: 100%; object-fit: contain; padding: 2px;">
+                </div>
+            <?php else: ?>
+                <div class="login-logo">
                     <i class="bi bi-hospital"></i>
-                <?php endif; ?>
-            </div>
+                </div>
+            <?php endif; ?>
             <h1><?= htmlspecialchars($clinicNameSetting) ?></h1>
             <p>Patient Management System</p>
         </div>
