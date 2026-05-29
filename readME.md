@@ -1,3 +1,9 @@
+# Barangay Sinalhan Patient Management System
+
+A modern, web-based patient management system designed for the Barangay Sinalhan Health Center (Santa Rosa City, Laguna, Philippines). Built with native PHP, Bootstrap 5, MySQL, Progressive Web App (PWA) offline sync capabilities, Server-Sent Events (SSE) queue systems, and HIPAA-compliant AES-256 data encryption.
+
+### 🌟 Features & Roles Matrix
+For an exhaustive, module-by-module breakdown of all system features, security guidelines, and user permissions, please refer to the **[Features Catalog (FEATURES.md)](file:///c:/xampp/htdocs/sinalhan-health-system/FEATURES.md)**.
 
 ---
 
