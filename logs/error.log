@@ -189,3 +189,11 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\xampp\htdocs\Patient Management System\queue\display.php on line 7
+[29-May-2026 23:08:58 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function require_role() in C:\xampp\htdocs\sinalhan-health-system\queue\display.php:7
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\sinalhan-health-system\queue\display.php on line 7
+[29-May-2026 23:12:59 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\Users\ralph\.gemini\antigravity\brain\26c0d65e-d2a3-438a-a425-4ff05b7bed4a\scratch\test_queue_sse.php:22) in C:\xampp\htdocs\sinalhan-health-system\ajax\queue_sse.php on line 3
+[29-May-2026 23:12:59 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\Users\ralph\.gemini\antigravity\brain\26c0d65e-d2a3-438a-a425-4ff05b7bed4a\scratch\test_queue_sse.php:22) in C:\xampp\htdocs\sinalhan-health-system\ajax\queue_sse.php on line 4
+[29-May-2026 23:12:59 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\Users\ralph\.gemini\antigravity\brain\26c0d65e-d2a3-438a-a425-4ff05b7bed4a\scratch\test_queue_sse.php:22) in C:\xampp\htdocs\sinalhan-health-system\ajax\queue_sse.php on line 5
+[29-May-2026 23:12:59 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\Users\ralph\.gemini\antigravity\brain\26c0d65e-d2a3-438a-a425-4ff05b7bed4a\scratch\test_queue_sse.php:22) in C:\xampp\htdocs\sinalhan-health-system\ajax\queue_sse.php on line 6

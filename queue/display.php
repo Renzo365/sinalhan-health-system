@@ -2,6 +2,7 @@
 // queue/display.php
 require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../includes/auth_guard.php';
+require_once __DIR__ . '/../includes/role_guard.php';
 
 // Allowed roles: admin, staff, bhw (standard access required to view monitor)
 require_role(['admin', 'staff', 'bhw']);
