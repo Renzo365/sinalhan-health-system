@@ -2,17 +2,24 @@
 // auth/login.php
 require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/settings_helper.php';
 
 // If user is already logged in, redirect them to the index page
 if (isset($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . 'index.php');
-    exit;
+    if (!defined('TESTING')) exit;
 }
 
 // Generate CSRF Token for Form Security
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+// Fetch settings database values
+$loginPdo = Database::getInstance()->getConnection();
+$clinicLogoSetting = get_setting($loginPdo, 'clinic_logo', '');
+$clinicNameSetting = get_setting($loginPdo, 'clinic_name', 'Barangay Sinalhan');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,10 +49,14 @@ if (empty($_SESSION['csrf_token'])) {
 
     <div class="login-container">
         <div class="login-header">
-            <div class="login-logo">
-                <i class="bi bi-hospital"></i>
+            <div class="login-logo" style="overflow: hidden;">
+                <?php if (!empty($clinicLogoSetting)): ?>
+                    <img src="<?= BASE_URL . $clinicLogoSetting ?>" alt="Logo" style="height: 100%; width: 100%; object-fit: contain; padding: 8px;">
+                <?php else: ?>
+                    <i class="bi bi-hospital"></i>
+                <?php endif; ?>
             </div>
-            <h1>Barangay Sinalhan</h1>
+            <h1><?= htmlspecialchars($clinicNameSetting) ?></h1>
             <p>Patient Management System</p>
         </div>
 
