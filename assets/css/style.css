@@ -379,3 +379,127 @@ body {
     background-color: var(--surface-white);
     margin-top: auto;
 }
+
+/* ==========================================================================
+   Dark Theme Overrides & Accessibility Styles
+   ========================================================================== */
+
+body.dark-theme {
+    --bg-main: #12181b;
+    --surface-white: #1e262a;
+    --text-primary: #f5f6f7;
+    --text-secondary: #a0aec0;
+    --text-muted: #4e5d66;
+    --border-color: #2d3748;
+    --primary-trans: rgba(20, 163, 168, 0.15);
+}
+
+body.dark-theme .top-navbar {
+    background-color: var(--surface-white);
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-theme .toggle-sidebar-btn:hover {
+    background-color: rgba(20, 163, 168, 0.1);
+}
+
+body.dark-theme .user-profile-menu:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .footer-text {
+    background-color: var(--surface-white);
+    border-top: 1px solid var(--border-color);
+}
+
+body.dark-theme .dropdown-menu {
+    background-color: var(--surface-white);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color) !important;
+}
+
+body.dark-theme .dropdown-item {
+    color: var(--text-primary);
+}
+
+body.dark-theme .dropdown-item:hover {
+    background-color: var(--border-color);
+}
+
+body.dark-theme .list-group-item {
+    background-color: var(--surface-white);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .list-group-item-action:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-theme .card, body.dark-theme .card-custom {
+    background-color: var(--surface-white);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .card-header, 
+body.dark-theme .card-custom-header, 
+body.dark-theme .card-footer {
+    border-color: var(--border-color);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+body.dark-theme input, 
+body.dark-theme select, 
+body.dark-theme textarea {
+    background-color: #12181b !important;
+    color: #f5f6f7 !important;
+    border-color: #2d3748 !important;
+}
+
+body.dark-theme input:focus, 
+body.dark-theme select:focus, 
+body.dark-theme textarea:focus {
+    border-color: var(--primary-light) !important;
+    box-shadow: 0 0 0 0.25rem rgba(20, 163, 168, 0.25) !important;
+}
+
+body.dark-theme .text-dark {
+    color: #f5f6f7 !important;
+}
+
+body.dark-theme .bg-light {
+    background-color: #1e262a !important;
+}
+
+body.dark-theme .table {
+    color: var(--text-primary) !important;
+}
+
+body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Accessibility Font Sizes */
+body.font-md {
+    font-size: 16px !important;
+}
+body.font-md .menu-link {
+    font-size: 16px !important;
+}
+body.font-md .table-custom td,
+body.font-md .table td {
+    font-size: 16px !important;
+}
+
+body.font-lg {
+    font-size: 18px !important;
+}
+body.font-lg .menu-link {
+    font-size: 18px !important;
+}
+body.font-lg .table-custom td,
+body.font-lg .table td {
+    font-size: 18px !important;
+}
+

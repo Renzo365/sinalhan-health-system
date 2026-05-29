@@ -2,6 +2,21 @@
 // includes/sidebar.php
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/session.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/settings_helper.php';
+
+$sidebarPdo = Database::getInstance()->getConnection();
+$clinicNameSetting = get_setting($sidebarPdo, 'clinic_name', 'Sinalhan HC');
+$clinicLogoSetting = get_setting($sidebarPdo, 'clinic_logo', '');
+
+$logoText = 'SINALHAN HC';
+if (!empty($clinicNameSetting)) {
+    if (stripos($clinicNameSetting, 'Barangay Sinalhan') === 0) {
+        $logoText = 'SINALHAN HC';
+    } else {
+        $logoText = mb_strtoupper(mb_substr($clinicNameSetting, 0, 15));
+    }
+}
 
 $role = $_SESSION['role'] ?? 'staff';
 $fullName = $_SESSION['full_name'] ?? 'Health Staff';
@@ -13,8 +28,12 @@ $currentMenu = $active_menu ?? '';
 <aside id="sidebar">
     <div class="sidebar-header">
         <a href="<?= BASE_URL ?>index.php" class="sidebar-logo">
-            <i class="bi bi-hospital"></i>
-            <span>SINALHAN HC</span>
+            <?php if (!empty($clinicLogoSetting)): ?>
+                <img src="<?= BASE_URL . $clinicLogoSetting ?>" alt="Logo" style="height: 30px; width: 30px; object-fit: contain; border-radius: 4px;">
+            <?php else: ?>
+                <i class="bi bi-hospital"></i>
+            <?php endif; ?>
+            <span><?= htmlspecialchars($logoText) ?></span>
         </a>
     </div>
     
@@ -153,6 +172,12 @@ $currentMenu = $active_menu ?? '';
             <a href="<?= BASE_URL ?>auth/profile.php" class="menu-link">
                 <i class="bi bi-person-circle"></i>
                 <span>My Profile</span>
+            </a>
+        </li>
+        <li class="menu-item <?= $currentMenu === 'settings' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>admin/settings.php" class="menu-link">
+                <i class="bi bi-gear"></i>
+                <span>System Settings</span>
             </a>
         </li>
         <li class="menu-item">

@@ -35,4 +35,18 @@ require_once __DIR__ . '/../config/session.php';
     <?php endif; ?>
 </head>
 <body>
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+            const fontSize = localStorage.getItem('fontSize');
+            if (fontSize === 'medium') {
+                document.body.classList.add('font-md');
+            } else if (fontSize === 'large') {
+                document.body.classList.add('font-lg');
+            }
+        })();
+    </script>
     <div id="wrapper">

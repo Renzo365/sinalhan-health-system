@@ -53,7 +53,7 @@ try {
     }
 
     // Validate active service category
-    $serviceStmt = $pdo->prepare("SELECT service_id, service_name FROM service_types WHERE service_id = ? AND is_active = 1");
+    $serviceStmt = $pdo->prepare("SELECT service_id, service_name, prefix FROM service_types WHERE service_id = ? AND is_active = 1");
     $serviceStmt->execute([$serviceId]);
     $serviceExists = $serviceStmt->fetch();
     if (!$serviceExists) {
@@ -83,7 +83,10 @@ try {
 
     $newQueueId = $pdo->lastInsertId();
     $patientFullName = $patient['first_name'] . ($patient['suffix'] ? ' ' . $patient['suffix'] : '') . ' ' . $patient['last_name'];
-    $ticketStr = str_pad($newQueueNumber, 3, '0', STR_PAD_LEFT);
+    
+    // Format using dynamic prefix (default to 'Q' if null)
+    $prefix = !empty($serviceExists['prefix']) ? $serviceExists['prefix'] : 'Q';
+    $ticketStr = $prefix . '-' . str_pad($newQueueNumber, 3, '0', STR_PAD_LEFT);
 
     // Log Activity
     log_activity(
