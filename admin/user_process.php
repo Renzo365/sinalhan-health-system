@@ -9,6 +9,7 @@ require_role(['admin']);
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/log_activity.php';
+require_once __DIR__ . '/../includes/notification_helper.php';
 
 // Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -92,6 +93,8 @@ try {
             $newUserId = $pdo->lastInsertId();
 
             log_activity($pdo, "Created user account '{$username}'", 'Admin', $newUserId, "Role: {$role}");
+
+            add_notification($pdo, get_admin_user_id($pdo), 'User Created', "Staff account @{$username} has been created successfully.", 'security');
 
             $_SESSION['alert'] = [
                 'type' => 'success',
@@ -194,6 +197,8 @@ try {
             $statusText = $status === 1 ? 'Activated' : 'Deactivated';
             log_activity($pdo, "{$statusText} user account '{$user['username']}'", 'Admin', $userId);
 
+            add_notification($pdo, get_admin_user_id($pdo), 'User Status Changed', "Account @{$user['username']} has been {$statusText}.", 'security');
+
             $_SESSION['alert'] = [
                 'type' => 'success',
                 'title' => "Account {$statusText}",
@@ -244,6 +249,8 @@ try {
             $updateStmt->execute([$newPasswordHash, $userId]);
 
             log_activity($pdo, "Reset password for user '{$username}'", 'Admin', $userId);
+
+            add_notification($pdo, get_admin_user_id($pdo), 'User Password Reset', "Password reset completed for account @{$username}.", 'security');
 
             $_SESSION['alert'] = [
                 'type' => 'success',

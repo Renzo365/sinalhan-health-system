@@ -9,6 +9,7 @@ require_role(['admin', 'staff']);
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/log_activity.php';
+require_once __DIR__ . '/../includes/notification_helper.php';
 
 // Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -70,6 +71,8 @@ try {
 
         log_activity($pdo, "Started serving queue ticket #{$ticketStr} for patient '{$patientFullName}'", 'Queue', $queueId);
         
+        add_notification($pdo, null, 'Serving Patient', "Ticket #{$ticketStr} ('{$patientFullName}') is now serving.", 'success');
+
         $_SESSION['alert'] = [
             'type' => 'success',
             'title' => 'Patient Called',
@@ -85,6 +88,8 @@ try {
 
         log_activity($pdo, "Completed queue service for ticket #{$ticketStr} for patient '{$patientFullName}'", 'Queue', $queueId);
 
+        add_notification($pdo, null, 'Service Completed', "Ticket #{$ticketStr} ('{$patientFullName}') completed successfully.", 'info');
+
         $_SESSION['alert'] = [
             'type' => 'success',
             'title' => 'Service Completed',
@@ -99,6 +104,8 @@ try {
         $updateStmt->execute([$queueId]);
 
         log_activity($pdo, "Marked queue ticket #{$ticketStr} for patient '{$patientFullName}' as No-Show", 'Queue', $queueId);
+
+        add_notification($pdo, null, 'Patient No-Show', "Ticket #{$ticketStr} ('{$patientFullName}') was marked as No-Show.", 'warning');
 
         $_SESSION['alert'] = [
             'type' => 'info',

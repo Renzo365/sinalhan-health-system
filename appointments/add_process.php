@@ -9,6 +9,7 @@ require_role(['admin', 'staff', 'bhw']);
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/log_activity.php';
+require_once __DIR__ . '/../includes/notification_helper.php';
 
 // Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -104,6 +105,9 @@ try {
         $newAppId,
         "Date: {$appointmentDate} | Service: {$serviceExists['service_name']}"
     );
+
+    // Trigger Notification
+    add_notification($pdo, null, 'New Appointment', "New appointment booked for '{$patientFullName}' on {$appointmentDate} ({$serviceExists['service_name']})", 'info');
 
     $_SESSION['alert'] = [
         'type' => 'success',

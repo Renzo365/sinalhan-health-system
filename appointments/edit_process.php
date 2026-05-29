@@ -9,6 +9,7 @@ require_role(['admin', 'staff']);
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/log_activity.php';
+require_once __DIR__ . '/../includes/notification_helper.php';
 
 // Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -114,6 +115,12 @@ try {
         $appId,
         "Date: {$appointmentDate} | Service: {$serviceExists['service_name']}"
     );
+
+    // Trigger Notification on status change
+    if ($oldStatus !== $status) {
+        $notifType = ($status === 'Cancelled' || $status === 'No-Show') ? 'danger' : (($status === 'Completed') ? 'success' : 'info');
+        add_notification($pdo, null, 'Appointment Status Change', "Appointment for '{$patientFullName}' status changed to '{$status}' (was '{$oldStatus}')", $notifType);
+    }
 
     $_SESSION['alert'] = [
         'type' => 'success',
