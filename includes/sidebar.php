@@ -31,7 +31,7 @@ if ($logoLength > 25) {
 }
 
 $role = $_SESSION['role'] ?? 'staff';
-$fullName = $_SESSION['full_name'] ?? 'Health Staff';
+$sidebarUserFullName = $_SESSION['full_name'] ?? 'Health Staff';
 $avatarLetter = strtoupper(substr($_SESSION['username'] ?? 'H', 0, 1));
 $currentMenu = $active_menu ?? '';
 ?>
@@ -240,7 +240,7 @@ $currentMenu = $active_menu ?? '';
                 <div class="user-profile-menu dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="user-avatar"><?= $avatarLetter ?></div>
                     <div class="user-info d-none d-md-block">
-                        <div class="user-name"><?= htmlspecialchars($fullName) ?></div>
+                        <div class="user-name"><?= htmlspecialchars($sidebarUserFullName) ?></div>
                         <div class="user-role"><?= htmlspecialchars($role) ?></div>
                     </div>
                 </div>
