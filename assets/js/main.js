@@ -51,4 +51,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     };
+
+    // Initialize Select2 elements if library is loaded
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('.select2-enable').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+    }
 });
