@@ -37,15 +37,36 @@ require_once __DIR__ . '/../config/session.php';
 <body>
     <script>
         (function() {
-            const theme = localStorage.getItem('theme');
+            const sessionTheme = '<?= $_SESSION['theme'] ?? '' ?>';
+            const sessionFontSize = '<?= $_SESSION['font_size'] ?? '' ?>';
+
+            let theme = sessionTheme;
+            if (!theme) {
+                theme = localStorage.getItem('theme') || 'light';
+            }
             if (theme === 'dark') {
                 document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
             }
-            const fontSize = localStorage.getItem('fontSize');
+
+            let fontSize = sessionFontSize;
+            if (!fontSize) {
+                fontSize = localStorage.getItem('fontSize') || 'normal';
+            }
+            document.body.classList.remove('font-md', 'font-lg');
             if (fontSize === 'medium') {
                 document.body.classList.add('font-md');
             } else if (fontSize === 'large') {
                 document.body.classList.add('font-lg');
+            }
+
+            // Sync back to localStorage for client consistency
+            if (sessionTheme) {
+                localStorage.setItem('theme', sessionTheme);
+            }
+            if (sessionFontSize) {
+                localStorage.setItem('fontSize', sessionFontSize);
             }
         })();
     </script>

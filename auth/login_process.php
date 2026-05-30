@@ -41,7 +41,7 @@ try {
     // 3. Query User from Database
     $pdo = Database::getInstance()->getConnection();
     $stmt = $pdo->prepare("
-        SELECT user_id, username, password_hash, first_name, last_name, role, is_active, is_archived, two_fa_enabled, two_fa_secret 
+        SELECT user_id, username, password_hash, first_name, last_name, role, is_active, is_archived, two_fa_enabled, two_fa_secret, theme, font_size 
         FROM users 
         WHERE username = ?
     ");
@@ -78,6 +78,8 @@ try {
             $_SESSION['temp_2fa_username'] = $user['username'];
             $_SESSION['temp_2fa_full_name'] = $user['first_name'] . ' ' . $user['last_name'];
             $_SESSION['temp_2fa_role'] = $user['role'];
+            $_SESSION['temp_2fa_theme'] = $user['theme'];
+            $_SESSION['temp_2fa_font_size'] = $user['font_size'];
 
             $_SESSION['alert'] = [
                 'type' => 'info',
@@ -95,6 +97,8 @@ try {
         $_SESSION['username'] = $user['username'];
         $_SESSION['full_name'] = $user['first_name'] . ' ' . $user['last_name'];
         $_SESSION['role'] = $user['role'];
+        $_SESSION['theme'] = $user['theme'];
+        $_SESSION['font_size'] = $user['font_size'];
         $_SESSION['login_time'] = time();
 
         // 7. Update last login details in users table

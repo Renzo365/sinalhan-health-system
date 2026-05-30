@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS users (
     is_archived TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1=archived, 0=active',
     two_fa_secret VARCHAR(32) DEFAULT NULL,
     two_fa_enabled TINYINT(1) DEFAULT 0,
+    theme VARCHAR(10) NOT NULL DEFAULT 'light',
+    font_size VARCHAR(10) NOT NULL DEFAULT 'normal',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_role (role),

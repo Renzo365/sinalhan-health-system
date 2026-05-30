@@ -62,6 +62,8 @@ try {
         $_SESSION['username'] = $_SESSION['temp_2fa_username'];
         $_SESSION['full_name'] = $_SESSION['temp_2fa_full_name'];
         $_SESSION['role'] = $_SESSION['temp_2fa_role'];
+        $_SESSION['theme'] = $_SESSION['temp_2fa_theme'] ?? 'light';
+        $_SESSION['font_size'] = $_SESSION['temp_2fa_font_size'] ?? 'normal';
         $_SESSION['login_time'] = time();
 
         // Clear temporary variables
@@ -69,6 +71,8 @@ try {
         unset($_SESSION['temp_2fa_username']);
         unset($_SESSION['temp_2fa_full_name']);
         unset($_SESSION['temp_2fa_role']);
+        unset($_SESSION['temp_2fa_theme']);
+        unset($_SESSION['temp_2fa_font_size']);
 
         // Update database log
         $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW(), last_login_ip = ? WHERE user_id = ?");

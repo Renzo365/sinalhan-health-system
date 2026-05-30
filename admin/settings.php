@@ -391,6 +391,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle theme
     themeSwitch.addEventListener('change', function() {
+        const themeVal = this.checked ? 'dark' : 'light';
         if (this.checked) {
             document.body.classList.add('dark-theme');
             localStorage.setItem('theme', 'dark');
@@ -400,6 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('theme', 'light');
             themeSwitchLabel.textContent = 'Toggle Dark Mode';
         }
+        savePreference('theme', themeVal);
     });
 
     // Font scaling triggers
@@ -407,6 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (this.checked) {
             document.body.classList.remove('font-md', 'font-lg');
             localStorage.setItem('fontSize', 'normal');
+            savePreference('font_size', 'normal');
         }
     });
     fontMedium.addEventListener('change', function() {
@@ -414,6 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.remove('font-lg');
             document.body.classList.add('font-md');
             localStorage.setItem('fontSize', 'medium');
+            savePreference('font_size', 'medium');
         }
     });
     fontLarge.addEventListener('change', function() {
@@ -421,8 +425,30 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.remove('font-md');
             document.body.classList.add('font-lg');
             localStorage.setItem('fontSize', 'large');
+            savePreference('font_size', 'large');
         }
     });
+
+    function savePreference(preferenceName, preferenceValue) {
+        $.ajax({
+            url: '../ajax/update_preferences.php',
+            method: 'POST',
+            data: {
+                csrf_token: '<?= $_SESSION['csrf_token'] ?>',
+                preference: preferenceName,
+                value: preferenceValue
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    console.log(preferenceName + ' saved successfully to database');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to save preference:', error);
+            }
+        });
+    }
 
     // ----------------------------------------------------
     // Administrative Utilities (MFA & Key Rotation & Purging)
