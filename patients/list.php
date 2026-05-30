@@ -75,30 +75,79 @@ require_once __DIR__ . '/../includes/sidebar.php';
     <div class="card-custom">
         <div class="card-custom-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <h3 class="card-custom-title"><i class="bi bi-people-fill"></i> Registered Sinalhan Patients</h3>
-            
-            <!-- Dynamic Purok filter dropdown -->
-            <div class="d-flex align-items-center gap-2" style="min-width: 250px;">
-                <label for="purokFilter" class="form-label mb-0 text-secondary text-nowrap font-weight-bold" style="font-size: 13px;">Filter by Purok:</label>
-                <select id="purokFilter" class="form-select form-select-sm">
-                    <option value="">-- All Puroks --</option>
-                    <option value="Purok 1">Purok 1</option>
-                    <option value="Purok 2">Purok 2</option>
-                    <option value="Purok 3">Purok 3</option>
-                    <option value="Purok 4">Purok 4</option>
-                    <option value="Purok 5">Purok 5</option>
-                    <option value="Purok 6">Purok 6</option>
-                    <option value="Purok 7">Purok 7</option>
-                    <option value="Purok 8">Purok 8</option>
-                    <option value="Purok 9">Purok 9</option>
-                    <option value="Purok 10">Purok 10</option>
-                    <option value="Zone 1">Zone 1</option>
-                    <option value="Zone 2">Zone 2</option>
-                    <option value="Zone 3">Zone 3</option>
-                </select>
-            </div>
         </div>
         
         <div class="card-custom-body">
+            <!-- Advanced Filters Collapsible Section -->
+            <div class="mb-4">
+                <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel" aria-expanded="false" aria-controls="filterPanel" style="outline: none; box-shadow: none;">
+                    <i class="bi bi-funnel-fill"></i>
+                    <span>Advanced Filters</span>
+                    <i class="bi bi-chevron-down ms-1" id="filterChevron"></i>
+                </button>
+                
+                <div class="collapse mt-3" id="filterPanel">
+                    <div class="p-3 bg-light border rounded-3 shadow-xs">
+                        <div class="row g-3">
+                            <!-- Purok Filter -->
+                            <div class="col-md-4">
+                                <label for="purokFilter" class="form-label mb-1 text-secondary font-weight-bold small">Purok / Zone</label>
+                                <select id="purokFilter" class="form-select form-select-sm">
+                                    <option value="">-- All Puroks --</option>
+                                    <option value="Purok 1">Purok 1</option>
+                                    <option value="Purok 2">Purok 2</option>
+                                    <option value="Purok 3">Purok 3</option>
+                                    <option value="Purok 4">Purok 4</option>
+                                    <option value="Purok 5">Purok 5</option>
+                                    <option value="Purok 6">Purok 6</option>
+                                    <option value="Purok 7">Purok 7</option>
+                                    <option value="Purok 8">Purok 8</option>
+                                    <option value="Purok 9">Purok 9</option>
+                                    <option value="Purok 10">Purok 10</option>
+                                    <option value="Zone 1">Zone 1</option>
+                                    <option value="Zone 2">Zone 2</option>
+                                    <option value="Zone 3">Zone 3</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Sex Filter -->
+                            <div class="col-md-4">
+                                <label for="sexFilter" class="form-label mb-1 text-secondary font-weight-bold small">Sex</label>
+                                <select id="sexFilter" class="form-select form-select-sm">
+                                    <option value="">-- All --</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+
+                            <!-- Age Group Filter -->
+                            <div class="col-md-4">
+                                <label for="ageGroupFilter" class="form-label mb-1 text-secondary font-weight-bold small">Age Group</label>
+                                <select id="ageGroupFilter" class="form-select form-select-sm">
+                                    <option value="">-- All Ages --</option>
+                                    <option value="infants">Infants / Toddlers (0-5 yrs)</option>
+                                    <option value="children">Children (6-12 yrs)</option>
+                                    <option value="teens">Teens (13-19 yrs)</option>
+                                    <option value="adults">Adults (20-59 yrs)</option>
+                                    <option value="seniors">Seniors (60+ yrs)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-3 text-muted">
+                        
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                            <div id="activeFiltersContainer" class="d-flex flex-wrap gap-2 align-items-center">
+                                <span class="text-secondary small">Active Filters: <span class="text-muted">None</span></span>
+                            </div>
+                            <button class="btn btn-sm btn-secondary d-flex align-items-center gap-1" id="resetFiltersBtn">
+                                <i class="bi bi-x-circle"></i> Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="table-responsive">
                 <table class="table table-hover table-custom align-middle" id="patientsTable">
                     <thead>
@@ -187,6 +236,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 1. Initialize DataTable
     if ($.fn.DataTable) {
+        // Custom Age Group search extension
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                if (settings.nTable.id !== 'patientsTable') {
+                    return true;
+                }
+                const ageGroup = $('#ageGroupFilter').val();
+                if (!ageGroup) {
+                    return true;
+                }
+                // Age is column index 2. We extract the digits from strings like "22 yrs"
+                const ageText = data[2] || '';
+                const ageVal = parseInt(ageText.replace(/\D/g, '')) || 0;
+                
+                switch (ageGroup) {
+                    case 'infants': return ageVal >= 0 && ageVal <= 5;
+                    case 'children': return ageVal >= 6 && ageVal <= 12;
+                    case 'teens': return ageVal >= 13 && ageVal <= 19;
+                    case 'adults': return ageVal >= 20 && ageVal <= 59;
+                    case 'seniors': return ageVal >= 60;
+                    default: return true;
+                }
+            }
+        );
+
         table = $('#patientsTable').DataTable({
             responsive: true,
             pageLength: 10,
@@ -196,11 +270,86 @@ document.addEventListener('DOMContentLoaded', function() {
             order: [[0, 'asc']] // Sort by last name alphabetically initially
         });
 
-        // 2. DataTable Custom Purok Filter Dropdown
+        // Update active badges and trigger DataTable filter redrawing
+        function updateFilterBadges() {
+            const purok = $('#purokFilter').val();
+            const sex = $('#sexFilter').val();
+            const ageGroup = $('#ageGroupFilter').val();
+            const container = $('#activeFiltersContainer');
+            
+            let badgesHtml = '<span class="text-secondary small fw-bold me-2">Active Filters:</span>';
+            let activeCount = 0;
+
+            if (purok) {
+                badgesHtml += `<span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">Purok: ${purok} <i class="bi bi-x-circle cursor-pointer ms-1 remove-filter-badge" data-target="purok"></i></span>`;
+                activeCount++;
+            }
+            if (sex) {
+                badgesHtml += `<span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">Sex: ${sex} <i class="bi bi-x-circle cursor-pointer ms-1 remove-filter-badge" data-target="sex"></i></span>`;
+                activeCount++;
+            }
+            if (ageGroup) {
+                const label = $('#ageGroupFilter option:selected').text().split(' (')[0];
+                badgesHtml += `<span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">Age: ${label} <i class="bi bi-x-circle cursor-pointer ms-1 remove-filter-badge" data-target="age"></i></span>`;
+                activeCount++;
+            }
+
+            if (activeCount === 0) {
+                container.html('<span class="text-secondary small">Active Filters: <span class="text-muted">None</span></span>');
+            } else {
+                container.html(badgesHtml);
+                // Bind remove triggers
+                $('.remove-filter-badge').on('click', function() {
+                    const target = $(this).data('target');
+                    if (target === 'purok') {
+                        $('#purokFilter').val('').trigger('change');
+                    } else if (target === 'sex') {
+                        $('#sexFilter').val('').trigger('change');
+                    } else if (target === 'age') {
+                        $('#ageGroupFilter').val('').trigger('change');
+                    }
+                });
+            }
+        }
+
+        // Filter change listeners
         $('#purokFilter').on('change', function() {
             const val = $.fn.dataTable.util.escapeRegex($(this).val());
-            // Filter Purok column (index 4) with exact match or clear search
             table.column(4).search(val ? '^' + val + '$' : '', true, false).draw();
+            updateFilterBadges();
+        });
+
+        $('#sexFilter').on('change', function() {
+            const val = $.fn.dataTable.util.escapeRegex($(this).val());
+            table.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
+            updateFilterBadges();
+        });
+
+        $('#ageGroupFilter').on('change', function() {
+            table.draw();
+            updateFilterBadges();
+        });
+
+        // Reset all filters button
+        $('#resetFiltersBtn').on('click', function(e) {
+            e.preventDefault();
+            $('#purokFilter').val('');
+            $('#sexFilter').val('');
+            $('#ageGroupFilter').val('');
+            
+            // Clear searches
+            table.column(1).search('');
+            table.column(4).search('');
+            table.search('').draw(); // Clear global search and redraw
+            
+            updateFilterBadges();
+        });
+
+        // Collapsible panel toggle icon indicator swing
+        $('#filterPanel').on('shown.bs.collapse', function () {
+            $('#filterChevron').removeClass('bi-chevron-down').addClass('bi-chevron-up');
+        }).on('hidden.bs.collapse', function () {
+            $('#filterChevron').removeClass('bi-chevron-up').addClass('bi-chevron-down');
         });
     }
 
