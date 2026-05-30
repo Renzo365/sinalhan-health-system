@@ -81,12 +81,12 @@ This document details all features, security implementations, offline capabiliti
 | **Restore Archived Records** | Yes | No | No |
 | **View Operational Reports** | Yes | Yes | No |
 | **Create/Edit Services Categories** | Yes | No | No |
-| **Register & Edit Patients Details** | Yes | Yes | Yes (Offline registrations only) |
+| **Register & Edit Patients Details** | Yes | Yes | Yes |
 | **Archive Patients Profiles** | Yes | No | No |
 | **Record Vital Signs & Consultations** | Yes | Yes | No |
-| **Manage Active Daily Queue Statuses** | Yes | Yes | No |
+| **Manage Active Daily Queue Statuses** | Yes | Yes | Yes |
 | **Generate Daily Queue Tickets** | Yes | Yes | Yes |
-| **Book & Modify Appointments** | Yes | Yes | No |
+| **Book & Modify Appointments** | Yes | Yes | Yes |
 | **Inspect PWA Storage & Adjust UI Size** | Yes | Yes | Yes |
 
 ---

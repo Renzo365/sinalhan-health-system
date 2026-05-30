@@ -4,8 +4,8 @@ require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../includes/auth_guard.php';
 require_once __DIR__ . '/../includes/role_guard.php';
 
-// Allowed roles: admin, staff (BHW restricted from managing)
-require_role(['admin', 'staff']);
+// Allowed roles: admin, staff, bhw
+require_role(['admin', 'staff', 'bhw']);
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/log_activity.php';

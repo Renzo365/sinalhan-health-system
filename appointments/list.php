@@ -177,8 +177,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-center gap-2">
-                                        <!-- Edit/Update link (Admin & Staff only) -->
-                                        <?php if ($role === 'admin' || $role === 'staff'): ?>
+                                        <!-- Edit/Update link (Admin, Staff & BHW) -->
+                                        <?php if ($role === 'admin' || $role === 'staff' || $role === 'bhw'): ?>
                                             <a href="<?= BASE_URL ?>appointments/edit.php?id=<?= $a['appointment_id'] ?>" 
                                                class="btn btn-sm btn-outline-primary border-0 p-1" 
                                                title="Update Status / Details">

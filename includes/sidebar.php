@@ -83,13 +83,15 @@ $currentMenu = $active_menu ?? '';
             </a>
         </li>
 
-        <!-- Health Records / consultations (BHW has view only, Admin & Staff have CRUD) -->
-        <li class="menu-item <?= $currentMenu === 'health_records' ? 'active' : '' ?>">
-            <a href="<?= BASE_URL ?>health_records/list.php" class="menu-link">
-                <i class="bi bi-file-earmark-medical"></i>
-                <span>Health Records</span>
-            </a>
-        </li>
+        <!-- Health Records / consultations (Admin & Staff only) -->
+        <?php if ($role === 'admin' || $role === 'staff'): ?>
+            <li class="menu-item <?= $currentMenu === 'health_records' ? 'active' : '' ?>">
+                <a href="<?= BASE_URL ?>health_records/list.php" class="menu-link">
+                    <i class="bi bi-file-earmark-medical"></i>
+                    <span>Health Records</span>
+                </a>
+            </li>
+        <?php endif; ?>
 
         <!-- Appointments Module -->
         <li class="menu-item <?= $currentMenu === 'appointments' ? 'active' : '' ?>">
@@ -102,7 +104,7 @@ $currentMenu = $active_menu ?? '';
         <li class="menu-header">Queue System</li>
 
         <!-- Queue Management -->
-        <?php if ($role === 'admin' || $role === 'staff'): ?>
+        <?php if ($role === 'admin' || $role === 'staff' || $role === 'bhw'): ?>
             <li class="menu-item <?= $currentMenu === 'queue_manage' ? 'active' : '' ?>">
                 <a href="<?= BASE_URL ?>queue/manage.php" class="menu-link">
                     <i class="bi bi-list-ol"></i>

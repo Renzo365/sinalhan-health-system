@@ -104,7 +104,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <i class="bi bi-arrow-left"></i>
                 <span>Directory</span>
             </a>
-            <?php if ($role === 'admin' || $role === 'staff'): ?>
+            <?php if ($role === 'admin' || $role === 'staff' || $role === 'bhw'): ?>
                 <a href="<?= BASE_URL ?>patients/edit.php?id=<?= $p['patient_id'] ?>" class="btn btn-outline-primary d-flex align-items-center gap-2 py-2 px-3">
                     <i class="bi bi-pencil-square"></i>
                     <span>Edit Profile</span>
@@ -174,11 +174,13 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 <i class="bi bi-heart-pulse-fill me-2 text-primary"></i> Medical Profile
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link font-weight-bold" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab" aria-controls="history-pane" aria-selected="false">
-                                <i class="bi bi-journal-medical me-2 text-info"></i> Consultations
-                            </button>
-                        </li>
+                        <?php if ($role === 'admin' || $role === 'staff'): ?>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link font-weight-bold" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab" aria-controls="history-pane" aria-selected="false">
+                                    <i class="bi bi-journal-medical me-2 text-info"></i> Consultations
+                                </button>
+                            </li>
+                        <?php endif; ?>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link font-weight-bold" id="appointments-tab" data-bs-toggle="tab" data-bs-target="#appointments-pane" type="button" role="tab" aria-controls="appointments-pane" aria-selected="false">
                                 <i class="bi bi-calendar-event me-2 text-accent"></i> Appointments
@@ -229,64 +231,66 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         </div>
                         
                         <!-- Tab 2: Consultations history -->
-                        <div class="tab-pane fade" id="history-pane" role="tabpanel" aria-labelledby="history-tab" tabindex="0">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-journal-medical text-primary me-1"></i> Patient Clinic History</h5>
-                                <?php if ($role === 'admin' || $role === 'staff'): ?>
-                                    <a href="<?= BASE_URL ?>health_records/add.php?patient_id=<?= $p['patient_id'] ?>" class="btn btn-sm btn-primary d-flex align-items-center gap-2">
-                                        <i class="bi bi-file-earmark-medical-fill"></i>
-                                        <span>Add Consultation</span>
-                                    </a>
+                        <?php if ($role === 'admin' || $role === 'staff'): ?>
+                            <div class="tab-pane fade" id="history-pane" role="tabpanel" aria-labelledby="history-tab" tabindex="0">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-journal-medical text-primary me-1"></i> Patient Clinic History</h5>
+                                    <?php if ($role === 'admin' || $role === 'staff'): ?>
+                                        <a href="<?= BASE_URL ?>health_records/add.php?patient_id=<?= $p['patient_id'] ?>" class="btn btn-sm btn-primary d-flex align-items-center gap-2">
+                                            <i class="bi bi-file-earmark-medical-fill"></i>
+                                            <span>Add Consultation</span>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+
+                                <?php if (count($consultations) > 0): ?>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle small">
+                                            <thead>
+                                                <tr class="table-light">
+                                                    <th>Visit Date</th>
+                                                    <th>Service Category</th>
+                                                    <th>Chief Complaint</th>
+                                                    <th>Attending Staff</th>
+                                                    <th class="text-center" style="width: 80px;">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($consultations as $c): ?>
+                                                    <?php
+                                                        $staffName = htmlspecialchars(($c['staff_first'] ?? '') . ' ' . ($c['staff_last'] ?? ''));
+                                                        if (trim($staffName) === '') {
+                                                            $staffName = 'N/A';
+                                                        }
+                                                        $complaint = htmlspecialchars($c['chief_complaint'] ?? '');
+                                                        if (strlen($complaint) > 50) {
+                                                            $complaint = substr($complaint, 0, 47) . '...';
+                                                        }
+                                                    ?>
+                                                    <tr>
+                                                        <td><strong class="text-dark"><?= date('Y-m-d', strtotime($c['visit_date'])) ?></strong></td>
+                                                        <td><span class="badge bg-light text-primary border"><?= htmlspecialchars($c['service_name'] ?? 'General') ?></span></td>
+                                                        <td class="text-secondary"><?= $complaint ?></td>
+                                                        <td class="text-secondary"><?= $staffName ?></td>
+                                                        <td class="text-center">
+                                                            <a href="<?= BASE_URL ?>health_records/view.php?id=<?= $c['record_id'] ?>" class="btn btn-sm btn-outline-info border-0 p-1" title="View Detail Record">
+                                                                <i class="bi bi-eye-fill fs-6"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="text-center py-5 text-muted border rounded-3 bg-light">
+                                        <i class="bi bi-folder-symlink fs-1 d-block mb-3 text-secondary"></i>
+                                        <h5>No Consultations Recorded</h5>
+                                        <p class="small text-secondary mb-0">There are no clinic visits or check-up logs registered for this patient profile.</p>
+                                    </div>
                                 <?php endif; ?>
                             </div>
-
-                            <?php if (count($consultations) > 0): ?>
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle small">
-                                        <thead>
-                                            <tr class="table-light">
-                                                <th>Visit Date</th>
-                                                <th>Service Category</th>
-                                                <th>Chief Complaint</th>
-                                                <th>Attending Staff</th>
-                                                <th class="text-center" style="width: 80px;">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($consultations as $c): ?>
-                                                <?php
-                                                    $staffName = htmlspecialchars(($c['staff_first'] ?? '') . ' ' . ($c['staff_last'] ?? ''));
-                                                    if (trim($staffName) === '') {
-                                                        $staffName = 'N/A';
-                                                    }
-                                                    $complaint = htmlspecialchars($c['chief_complaint'] ?? '');
-                                                    if (strlen($complaint) > 50) {
-                                                        $complaint = substr($complaint, 0, 47) . '...';
-                                                    }
-                                                ?>
-                                                <tr>
-                                                    <td><strong class="text-dark"><?= date('Y-m-d', strtotime($c['visit_date'])) ?></strong></td>
-                                                    <td><span class="badge bg-light text-primary border"><?= htmlspecialchars($c['service_name'] ?? 'General') ?></span></td>
-                                                    <td class="text-secondary"><?= $complaint ?></td>
-                                                    <td class="text-secondary"><?= $staffName ?></td>
-                                                    <td class="text-center">
-                                                        <a href="<?= BASE_URL ?>health_records/view.php?id=<?= $c['record_id'] ?>" class="btn btn-sm btn-outline-info border-0 p-1" title="View Detail Record">
-                                                            <i class="bi bi-eye-fill fs-6"></i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            <?php else: ?>
-                                <div class="text-center py-5 text-muted border rounded-3 bg-light">
-                                    <i class="bi bi-folder-symlink fs-1 d-block mb-3 text-secondary"></i>
-                                    <h5>No Consultations Recorded</h5>
-                                    <p class="small text-secondary mb-0">There are no clinic visits or check-up logs registered for this patient profile.</p>
-                                </div>
-                            <?php endif; ?>
-                        </div>
+                        <?php endif; ?>
 
                         <!-- Tab 3: Appointments history -->
                         <div class="tab-pane fade" id="appointments-pane" role="tabpanel" aria-labelledby="appointments-tab" tabindex="0">
@@ -307,7 +311,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                                 <th>Service Type</th>
                                                 <th>Reason / Details</th>
                                                 <th>Status</th>
-                                                <?php if ($role === 'admin' || $role === 'staff'): ?>
+                                                <?php if ($role === 'admin' || $role === 'staff' || $role === 'bhw'): ?>
                                                     <th class="text-center" style="width: 80px;">Action</th>
                                                 <?php endif; ?>
                                             </tr>
@@ -335,7 +339,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                                     <td><span class="badge bg-light text-primary border"><?= htmlspecialchars($a['service_name'] ?? 'General') ?></span></td>
                                                     <td class="text-secondary"><?= $reason ?></td>
                                                     <td><span class="<?= $statusClass ?>"><?= htmlspecialchars($a['status']) ?></span></td>
-                                                    <?php if ($role === 'admin' || $role === 'staff'): ?>
+                                                    <?php if ($role === 'admin' || $role === 'staff' || $role === 'bhw'): ?>
                                                         <td class="text-center">
                                                             <a href="<?= BASE_URL ?>appointments/edit.php?id=<?= $a['appointment_id'] ?>" class="btn btn-sm btn-outline-primary border-0 p-1" title="Modify Appointment">
                                                                 <i class="bi bi-pencil-square fs-6"></i>

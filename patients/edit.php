@@ -4,8 +4,8 @@ require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../includes/auth_guard.php';
 require_once __DIR__ . '/../includes/role_guard.php';
 
-// Allowed roles: admin, staff (BHW is excluded from editing)
-require_role(['admin', 'staff']);
+// Allowed roles: admin, staff, bhw
+require_role(['admin', 'staff', 'bhw']);
 
 $page_title = 'Edit Patient Profile';
 $active_menu = 'patients';

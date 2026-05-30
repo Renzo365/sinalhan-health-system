@@ -4,8 +4,8 @@ require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../includes/auth_guard.php';
 require_once __DIR__ . '/../includes/role_guard.php';
 
-// Allowed roles: admin, staff, bhw
-require_role(['admin', 'staff', 'bhw']);
+// Allowed roles: admin, staff
+require_role(['admin', 'staff']);
 
 $page_title = 'Consultation Details';
 $active_menu = 'health_records';

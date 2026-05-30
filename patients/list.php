@@ -193,8 +193,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                             <i class="bi bi-eye-fill fs-5"></i>
                                         </a>
 
-                                        <!-- Edit Details link (Admin & Staff only) -->
-                                        <?php if ($role === 'admin' || $role === 'staff'): ?>
+                                        <!-- Edit Details link (Admin, Staff & BHW) -->
+                                        <?php if ($role === 'admin' || $role === 'staff' || $role === 'bhw'): ?>
                                             <a href="<?= BASE_URL ?>patients/edit.php?id=<?= $p['patient_id'] ?>" 
                                                class="btn btn-sm btn-outline-primary border-0 p-1" 
                                                title="Modify Information">
