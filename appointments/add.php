@@ -43,12 +43,8 @@ try {
         }
     }
 
-    // Fetch active patients list for dropdown if not locked
+    // Patient loading delegated to AJAX search to optimize database load
     $patients = [];
-    if (!$patientDetails) {
-        $stmt = $pdo->query("SELECT patient_id, first_name, middle_name, last_name, suffix, birthdate FROM patients WHERE is_archived = 0 ORDER BY last_name ASC, first_name ASC");
-        $patients = $stmt->fetchAll();
-    }
 
     // Fetch active service types
     $servicesStmt = $pdo->query("SELECT service_id, service_name FROM service_types WHERE is_active = 1 ORDER BY service_name ASC");
@@ -199,9 +195,69 @@ require_once __DIR__ . '/../includes/sidebar.php';
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Select2 Autocomplete
     if (typeof $.fn.select2 !== 'undefined') {
+        // Custom Result Formatter
+        function formatPatientResult(patient) {
+            if (patient.loading) {
+                return patient.text;
+            }
+            
+            var $container = $(
+                "<div class='select2-result-patient d-flex justify-content-between align-items-center py-1'>" +
+                    "<div>" +
+                        "<div class='select2-result-patient__name fw-bold text-primary'></div>" +
+                        "<div class='select2-result-patient__details text-secondary' style='font-size: 11px;'></div>" +
+                    "</div>" +
+                    "<div>" +
+                        "<span class='select2-result-patient__purok badge bg-light text-dark border' style='font-size: 10px;'></span>" +
+                    "</div>" +
+                "</div>"
+            );
+            
+            var fullName = patient.last_name + ', ' + patient.first_name;
+            if (patient.middle_name) {
+                fullName += ' ' + patient.middle_name.substring(0, 1) + '.';
+            }
+            if (patient.suffix) {
+                fullName += ' ' + patient.suffix;
+            }
+            
+            $container.find(".select2-result-patient__name").text(fullName);
+            $container.find(".select2-result-patient__details").text(
+                patient.sex + " | Age: " + patient.age + " yrs | DOB: " + patient.birthdate
+            );
+            $container.find(".select2-result-patient__purok").text(patient.purok);
+            
+            return $container;
+        }
+
+        function formatPatientSelection(patient) {
+            return patient.text;
+        }
+
         $('.select2-enable').select2({
             theme: 'bootstrap-5',
-            width: '100%'
+            width: '100%',
+            placeholder: '-- Search & Select Patient --',
+            allowClear: true,
+            ajax: {
+                url: '../ajax/search_patients.php',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        q: params.term
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            },
+            minimumInputLength: 0,
+            templateResult: formatPatientResult,
+            templateSelection: formatPatientSelection
         });
     }
 
