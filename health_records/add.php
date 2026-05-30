@@ -275,6 +275,14 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Select2 Autocomplete
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('.select2-enable').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+    }
+
     const form = document.getElementById('newRecordForm');
 
     form.addEventListener('submit', function(e) {
