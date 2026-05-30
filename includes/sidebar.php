@@ -14,8 +14,20 @@ if (!empty($clinicNameSetting)) {
     if (stripos($clinicNameSetting, 'Barangay Sinalhan') === 0) {
         $logoText = 'SINALHAN HC';
     } else {
-        $logoText = mb_strtoupper(mb_substr($clinicNameSetting, 0, 15));
+        $logoText = mb_strtoupper($clinicNameSetting);
     }
+}
+
+// Dynamically scale down font size based on text length to prevent layout breakage
+$logoLength = mb_strlen($logoText);
+$fontSize = '16px';
+if ($logoLength > 25) {
+    $fontSize = '10px';
+    $logoText = mb_substr($logoText, 0, 25) . '...';
+} elseif ($logoLength > 20) {
+    $fontSize = '11px';
+} elseif ($logoLength > 15) {
+    $fontSize = '13px';
 }
 
 $role = $_SESSION['role'] ?? 'staff';
@@ -33,7 +45,7 @@ $currentMenu = $active_menu ?? '';
             <?php else: ?>
                 <i class="bi bi-hospital"></i>
             <?php endif; ?>
-            <span><?= htmlspecialchars($logoText) ?></span>
+            <span style="font-size: <?= $fontSize ?>; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex-grow: 1;"><?= htmlspecialchars($logoText) ?></span>
         </a>
     </div>
     
