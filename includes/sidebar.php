@@ -212,7 +212,7 @@ $currentMenu = $active_menu ?? '';
         </button>
 
         <!-- Global Search Bar -->
-        <div class="search-bar-global d-none d-md-flex align-items-center position-relative ms-3" style="max-width: 400px; flex-grow: 1;">
+        <div class="search-bar-global d-none d-md-flex align-items-center position-relative ms-3" style="max-width: 360px; flex-grow: 1;">
             <div class="input-group">
                 <span class="input-group-text bg-transparent border-end-0 text-secondary border-color" style="height: 38px;">
                     <i class="bi bi-search"></i>
@@ -225,6 +225,12 @@ $currentMenu = $active_menu ?? '';
         </div>
 
         <div class="d-flex align-items-center gap-3">
+            <!-- Header Clock Display -->
+            <div class="d-none d-md-flex flex-column text-end pe-3 border-end" id="headerClockContainer" style="line-height: 1.25; border-color: var(--border-color) !important;">
+                <span id="headerClockDate" class="text-dark fw-semibold" style="font-size: 13px; white-space: nowrap;"></span>
+                <span id="headerClockTime" class="text-secondary fw-medium" style="font-size: 11px; letter-spacing: 0.3px; white-space: nowrap;"></span>
+            </div>
+
             <!-- Notifications dropdown -->
             <div class="dropdown">
                 <div class="position-relative cursor-pointer p-2 rounded-circle hover-bg dropdown-toggle no-arrow" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false" style="outline: none;">
@@ -604,6 +610,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 globalSearchSuggestions.style.display = 'block';
             }
         });
+    }
+
+    // Dynamic Header Clock
+    const headerClockDate = document.getElementById('headerClockDate');
+    const headerClockTime = document.getElementById('headerClockTime');
+    if (headerClockDate && headerClockTime) {
+        function updateHeaderClock() {
+            const now = new Date();
+            headerClockDate.textContent = now.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            headerClockTime.textContent = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+        }
+        updateHeaderClock();
+        setInterval(updateHeaderClock, 1000);
     }
 });
 </script>

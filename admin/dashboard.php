@@ -47,10 +47,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <h2 class="page-title">Barangay Sinalhan Health Center</h2>
             <p class="text-secondary mb-0">System Overview and Auditing Dashboard</p>
         </div>
-        <div class="d-none d-md-block text-secondary text-end">
-            <i class="bi bi-clock me-1"></i>
-            <span id="liveClock"><?= date('F d, Y h:i A') ?></span>
-        </div>
+
     </div>
 
     <!-- Summary Metrics Cards Grid -->
@@ -218,26 +215,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 </main>
 
-<script>
-    // Live clock updater inside Page Header
-    document.addEventListener('DOMContentLoaded', function() {
-        const liveClockObj = document.getElementById('liveClock');
-        if (liveClockObj) {
-            setInterval(function() {
-                const now = new Date();
-                liveClockObj.innerText = now.toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: '2-digit',
-                    year: 'numeric'
-                }) + ' ' + now.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-            }, 1000);
-        }
-    });
-</script>
+
 
 <?php
 // Load SweetAlert session alerts
