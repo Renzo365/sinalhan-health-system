@@ -209,49 +209,54 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 2. Edit Modal trigger details loading
+    // 2. Event delegation for table action buttons
     const editModal = new bootstrap.Modal(document.getElementById('editServiceModal'));
+    const servicesTable = document.getElementById('servicesTable');
 
-    document.querySelectorAll('.edit-service-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const name = this.getAttribute('data-name');
-            const desc = this.getAttribute('data-desc');
+    if (servicesTable) {
+        servicesTable.addEventListener('click', function(e) {
+            // Edit button handler
+            const editBtn = e.target.closest('.edit-service-btn');
+            if (editBtn) {
+                const id = editBtn.getAttribute('data-id');
+                const name = editBtn.getAttribute('data-name');
+                const desc = editBtn.getAttribute('data-desc');
 
-            document.getElementById('edit_service_id').value = id;
-            document.getElementById('edit_service_name').value = name;
-            document.getElementById('edit_description').value = desc;
+                document.getElementById('edit_service_id').value = id;
+                document.getElementById('edit_service_name').value = name;
+                document.getElementById('edit_description').value = desc;
 
-            editModal.show();
+                editModal.show();
+                return;
+            }
+
+            // Status toggle button handler
+            const toggleBtn = e.target.closest('.toggle-status-btn');
+            if (toggleBtn) {
+                const id = toggleBtn.getAttribute('data-id');
+                const name = toggleBtn.getAttribute('data-name');
+                const status = toggleBtn.getAttribute('data-status'); // 1 = activate, 0 = deactivate
+                const actionText = status === '1' ? 'activate' : 'deactivate';
+                const buttonColor = status === '1' ? '#28A745' : '#DC3545';
+
+                Swal.fire({
+                    title: `Are you sure?`,
+                    text: `You are about to ${actionText} the service category '${name}'.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: buttonColor,
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: `Yes, ${actionText} it!`
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('status_service_id').value = id;
+                        document.getElementById('status_val').value = status;
+                        document.getElementById('toggleStatusForm').submit();
+                    }
+                });
+            }
         });
-    });
-
-    // 3. Status Toggle Trigger
-    document.querySelectorAll('.toggle-status-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const name = this.getAttribute('data-name');
-            const status = this.getAttribute('data-status'); // 1 = activate, 0 = deactivate
-            const actionText = status === '1' ? 'activate' : 'deactivate';
-            const buttonColor = status === '1' ? '#28A745' : '#DC3545';
-
-            Swal.fire({
-                title: `Are you sure?`,
-                text: `You are about to ${actionText} the service category '${name}'.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: buttonColor,
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: `Yes, ${actionText} it!`
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('status_service_id').value = id;
-                    document.getElementById('status_val').value = status;
-                    document.getElementById('toggleStatusForm').submit();
-                }
-            });
-        });
-    });
+    }
 });
 </script>
 

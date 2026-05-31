@@ -10,14 +10,9 @@ require_role(['admin', 'staff']);
 $page_title = 'New Consultation';
 $active_menu = 'health_records';
 
-// Load Select2 autocomplete styles & scripts
-$extra_css = [
-    'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css',
-    'https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css'
-];
-$extra_js = [
-    'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js'
-];
+// No extra scripts required (native autocomplete uses global style.css)
+$extra_css = [];
+$extra_js = [];
 
 require_once __DIR__ . '/../config/database.php';
 $pdo = Database::getInstance()->getConnection();
@@ -120,22 +115,20 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 </p>
                             </div>
                         <?php else: ?>
-                            <!-- Choose Patient Dropdown -->
+                            <!-- Choose Patient Autocomplete Selector -->
                             <div class="mb-0">
-                                <label for="patient_id" class="form-label font-weight-bold mb-1">Select Patient <span class="text-danger">*</span></label>
-                                <select name="patient_id" id="patient_id" class="form-select select2-enable" required>
-                                    <option value="" disabled selected>-- Search & Select Patient --</option>
-                                    <?php foreach ($patients as $pat): ?>
-                                        <?php
-                                            $dobText = date('Y-m-d', strtotime($pat['birthdate']));
-                                            $ageText = (new DateTime())->diff(new DateTime($pat['birthdate']))->y;
-                                            $patName = htmlspecialchars($pat['last_name'] . ', ' . $pat['first_name'] . ($pat['middle_name'] ? ' ' . substr($pat['middle_name'], 0, 1) . '.' : '') . ($pat['suffix'] ? ' ' . $pat['suffix'] : ''));
-                                        ?>
-                                        <option value="<?= $pat['patient_id'] ?>">
-                                            <?= $patName ?> (<?= $ageText ?> yrs, born <?= $dobText ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <label for="patient_search_input" class="form-label font-weight-bold mb-1">Select Patient <span class="text-danger">*</span></label>
+                                <div class="position-relative">
+                                    <input type="hidden" name="patient_id" id="patient_id" required>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-transparent border-end-0 text-secondary border-color" style="height: 38px;">
+                                            <i class="bi bi-search"></i>
+                                        </span>
+                                        <input type="text" id="patient_search_input" class="form-control border-start-0 border-color" placeholder="Type patient name to search..." autocomplete="off" style="height: 38px; box-shadow: none;" required>
+                                    </div>
+                                    <ul id="patientSearchSuggestions" class="dropdown-menu shadow border-0 mt-1 w-100 rounded-3 py-2" style="max-height: 280px; overflow-y: auto; display: none; position: absolute; top: 100%; left: 0; z-index: 1050; border: 1px solid var(--border-color) !important;">
+                                    </ul>
+                                </div>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -301,71 +294,136 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Select2 Autocomplete
-    if (typeof $.fn.select2 !== 'undefined') {
-        // Custom Result Formatter
-        function formatPatientResult(patient) {
-            if (patient.loading) {
-                return patient.text;
-            }
-            
-            var $container = $(
-                "<div class='select2-result-patient d-flex justify-content-between align-items-center py-1'>" +
-                    "<div>" +
-                        "<div class='select2-result-patient__name fw-bold text-primary'></div>" +
-                        "<div class='select2-result-patient__details text-secondary' style='font-size: 11px;'></div>" +
-                    "</div>" +
-                    "<div>" +
-                        "<span class='select2-result-patient__purok badge bg-light text-dark border' style='font-size: 10px;'></span>" +
-                    "</div>" +
-                "</div>"
-            );
-            
-            var fullName = patient.last_name + ', ' + patient.first_name;
-            if (patient.middle_name) {
-                fullName += ' ' + patient.middle_name.substring(0, 1) + '.';
-            }
-            if (patient.suffix) {
-                fullName += ' ' + patient.suffix;
-            }
-            
-            $container.find(".select2-result-patient__name").text(fullName);
-            $container.find(".select2-result-patient__details").text(
-                patient.sex + " | Age: " + patient.age + " yrs | DOB: " + patient.birthdate
-            );
-            $container.find(".select2-result-patient__purok").text(patient.purok);
-            
-            return $container;
-        }
+    // Form Patient Autocomplete Selector
+    const patientSearchInput = document.getElementById('patient_search_input');
+    const patientSearchSuggestions = document.getElementById('patientSearchSuggestions');
+    const selectedPatientId = document.getElementById('patient_id');
+    let formSearchTimeout = null;
 
-        function formatPatientSelection(patient) {
-            return patient.text;
-        }
+    if (patientSearchInput && patientSearchSuggestions && selectedPatientId) {
+        // Keyboard actions: arrows, enter, escape
+        patientSearchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                patientSearchSuggestions.style.display = 'none';
+                patientSearchInput.blur();
+                return;
+            }
 
-        $('.select2-enable').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            placeholder: '-- Search & Select Patient --',
-            allowClear: true,
-            ajax: {
-                url: '../ajax/search_patients.php',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        q: params.term
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.results
-                    };
-                },
-                cache: true
-            },
-            minimumInputLength: 0,
-            templateResult: formatPatientResult,
-            templateSelection: formatPatientSelection
+            const items = patientSearchSuggestions.querySelectorAll('.dropdown-item');
+            if (items.length === 0) return;
+
+            let activeIndex = -1;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].classList.contains('active')) {
+                    activeIndex = i;
+                    break;
+                }
+            }
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (activeIndex !== -1) {
+                    items[activeIndex].classList.remove('active', 'bg-light');
+                }
+                activeIndex = (activeIndex + 1) % items.length;
+                items[activeIndex].classList.add('active', 'bg-light');
+                items[activeIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (activeIndex !== -1) {
+                    items[activeIndex].classList.remove('active', 'bg-light');
+                }
+                activeIndex = (activeIndex - 1 + items.length) % items.length;
+                items[activeIndex].classList.add('active', 'bg-light');
+                items[activeIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter') {
+                if (activeIndex !== -1) {
+                    e.preventDefault();
+                    items[activeIndex].click();
+                }
+            }
+        });
+
+        patientSearchInput.addEventListener('input', function() {
+            clearTimeout(formSearchTimeout);
+            selectedPatientId.value = '';
+            patientSearchInput.classList.remove('is-valid');
+            
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                patientSearchSuggestions.style.display = 'none';
+                patientSearchSuggestions.innerHTML = '';
+                return;
+            }
+
+            // Debouncer: wait 250ms
+            formSearchTimeout = setTimeout(function() {
+                fetch(`../ajax/search_patients.php?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const results = data.results || [];
+                        if (results.length > 0) {
+                            let listHtml = '';
+                            results.forEach(pat => {
+                                const patName = pat.last_name + ', ' + pat.first_name + (pat.middle_name ? ' ' + pat.middle_name.substring(0, 1) + '.' : '') + (pat.suffix ? ' ' + pat.suffix : '');
+                                listHtml += `
+                                    <li>
+                                        <button type="button" class="dropdown-item py-2 px-3 d-flex justify-content-between align-items-center w-100 border-0 bg-transparent text-start select-patient-btn" data-id="${pat.id}" data-name="${patName} (${pat.age} yrs, born ${pat.birthdate})">
+                                            <div>
+                                                <div class="fw-bold text-primary" style="font-size: 13px;">${patName}</div>
+                                                <small class="text-secondary" style="font-size: 11px;">${pat.sex} | Age: ${pat.age} yrs | DOB: ${pat.birthdate}</small>
+                                            </div>
+                                            <span class="badge bg-light text-dark border" style="font-size: 10px;">${pat.purok || 'N/A'}</span>
+                                        </button>
+                                    </li>
+                                `;
+                            });
+                            patientSearchSuggestions.innerHTML = listHtml;
+                            patientSearchSuggestions.style.display = 'block';
+
+                            // Bind clicks
+                            patientSearchSuggestions.querySelectorAll('.select-patient-btn').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    const patId = this.dataset.id;
+                                    const patName = this.dataset.name;
+                                    
+                                    selectedPatientId.value = patId;
+                                    patientSearchInput.value = patName;
+                                    patientSearchInput.classList.add('is-valid');
+                                    patientSearchSuggestions.style.display = 'none';
+                                });
+                            });
+                        } else {
+                            patientSearchSuggestions.innerHTML = `
+                                <li class="px-3 py-2 text-muted text-center" style="font-size: 12px;">
+                                    <i class="bi bi-person-x me-1"></i> No patients found
+                                </li>
+                            `;
+                            patientSearchSuggestions.style.display = 'block';
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Patient selection search error:", err);
+                    });
+            }, 250);
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!patientSearchInput.contains(e.target) && !patientSearchSuggestions.contains(e.target)) {
+                patientSearchSuggestions.style.display = 'none';
+                if (!selectedPatientId.value) {
+                    patientSearchInput.value = '';
+                }
+            }
+        });
+
+        // Show suggestions again if focused and has value
+        patientSearchInput.addEventListener('focus', function() {
+            if (this.value.trim().length >= 2 && !selectedPatientId.value) {
+                patientSearchSuggestions.style.display = 'block';
+            }
         });
     }
 
