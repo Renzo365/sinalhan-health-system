@@ -76,6 +76,10 @@ try {
     $servicesStmt = $pdo->query("SELECT service_id, service_name FROM service_types WHERE is_active = 1 OR service_id = " . (int)$r['service_id'] . " ORDER BY service_name ASC");
     $services = $servicesStmt->fetchAll();
 
+    // Fetch consultation templates
+    $templatesStmt = $pdo->query("SELECT template_id, template_name FROM consultation_templates ORDER BY template_name ASC");
+    $templates = $templatesStmt->fetchAll();
+
 } catch (Exception $e) {
     error_log("Failed to load health record for editing: " . $e->getMessage());
     $_SESSION['alert'] = [
@@ -184,6 +188,17 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 <input type="number" name="respiratory_rate" id="respiratory_rate" class="form-control" value="<?= $r['respiratory_rate'] !== null ? htmlspecialchars($r['respiratory_rate']) : '' ?>" placeholder="e.g. 18" min="5" max="100">
                                 <small class="text-secondary small">Breaths per minute</small>
                             </div>
+
+                            <!-- Real-time BMI Display Card -->
+                            <div class="col-12 mt-3 pt-3 border-top">
+                                <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="text-secondary small d-block">Calculated BMI</span>
+                                        <strong id="bmi-display" class="fs-5 text-dark">—</strong>
+                                    </div>
+                                    <span id="bmi-badge" class="badge rounded-pill d-none" style="font-size: 11px; padding: 6px 12px;">Normal</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -216,6 +231,21 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 <label for="visit_date" class="form-label font-weight-bold mb-1">Visit Date <span class="text-danger">*</span></label>
                                 <input type="date" name="visit_date" id="visit_date" class="form-control" value="<?= htmlspecialchars($r['visit_date']) ?>" required>
                             </div>
+                        </div>
+
+                        <!-- Consultation Templates Select -->
+                        <div class="mb-4 p-3 bg-light rounded-3 border">
+                            <label for="template_id" class="form-label fw-bold text-primary mb-1">
+                                <i class="bi bi-file-earmark-plus"></i> Use Preset Template
+                            </label>
+                            <select id="template_id" class="form-select">
+                                <option value="" selected>-- Select a template to pre-fill clinical textareas --</option>
+                                <?php foreach ($templates as $tmpl): ?>
+                                    <option value="<?= $tmpl['template_id'] ?>">
+                                        <?= htmlspecialchars($tmpl['template_name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
 
                         <!-- Chief Complaint -->
@@ -265,6 +295,146 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Real-time BMI Calculator
+    const weightInput = document.getElementById('weight_kg');
+    const heightInput = document.getElementById('height_cm');
+    const bmiDisplay = document.getElementById('bmi-display');
+    const bmiBadge = document.getElementById('bmi-badge');
+
+    function calculateBMI() {
+        const weight = parseFloat(weightInput.value);
+        const height = parseFloat(heightInput.value);
+
+        if (weight > 0 && height > 0) {
+            const heightM = height / 100;
+            const bmi = (weight / (heightM * heightM)).toFixed(1);
+            bmiDisplay.textContent = bmi + ' kg/m²';
+            
+            let status = 'Normal';
+            let badgeClass = 'bg-success text-white';
+
+            if (bmi < 18.5) {
+                status = 'Underweight';
+                badgeClass = 'bg-warning text-dark';
+            } else if (bmi >= 18.5 && bmi < 25.0) {
+                status = 'Normal';
+                badgeClass = 'bg-success text-white';
+            } else if (bmi >= 25.0 && bmi < 30.0) {
+                status = 'Overweight';
+                badgeClass = 'bg-danger bg-opacity-75 text-white';
+            } else {
+                status = 'Obese';
+                badgeClass = 'bg-danger text-white';
+            }
+
+            bmiBadge.className = 'badge rounded-pill ' + badgeClass;
+            bmiBadge.textContent = status;
+            bmiBadge.classList.remove('d-none');
+        } else {
+            bmiDisplay.textContent = '—';
+            bmiBadge.classList.add('d-none');
+        }
+    }
+
+    if (weightInput && heightInput) {
+        weightInput.addEventListener('input', calculateBMI);
+        heightInput.addEventListener('input', calculateBMI);
+        calculateBMI();
+    }
+
+    // Consultation Template Loader
+    const templateSelect = document.getElementById('template_id');
+    const complaintText = document.getElementById('chief_complaint');
+    const diagnosisText = document.getElementById('diagnosis');
+    const treatmentText = document.getElementById('treatment');
+    const prescriptionText = document.getElementById('prescription');
+
+    let previousTemplateVal = "";
+
+    if (templateSelect) {
+        templateSelect.addEventListener('change', function() {
+            const templateId = this.value;
+            if (!templateId) {
+                previousTemplateVal = "";
+                return;
+            }
+
+            const hasExistingContent = 
+                complaintText.value.trim().length > 0 ||
+                diagnosisText.value.trim().length > 0 ||
+                treatmentText.value.trim().length > 0 ||
+                prescriptionText.value.trim().length > 0;
+
+            if (hasExistingContent) {
+                Swal.fire({
+                    title: 'Overwrite Form Fields?',
+                    text: 'Selecting a preset template will overwrite any text currently entered in the Chief Complaint, Diagnosis, Treatment, and Prescription fields.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#DC3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, load template',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetchTemplate(templateId);
+                    } else {
+                        templateSelect.value = previousTemplateVal;
+                    }
+                });
+            } else {
+                fetchTemplate(templateId);
+            }
+        });
+    }
+
+    function fetchTemplate(templateId) {
+        fetch(`../ajax/get_template.php?template_id=${templateId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.template) {
+                    const tmpl = data.template;
+                    complaintText.value = tmpl.chief_complaint;
+                    diagnosisText.value = tmpl.diagnosis;
+                    treatmentText.value = tmpl.treatment;
+                    prescriptionText.value = tmpl.prescription;
+                    previousTemplateVal = templateId;
+                    
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('success', `${tmpl.name} template loaded`);
+                    } else {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            timer: 3000,
+                            icon: 'success',
+                            title: `${tmpl.name} template loaded`,
+                            showConfirmButton: false,
+                            timerProgressBar: true
+                        });
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Template Error',
+                        text: 'Failed to fetch the template details.',
+                        confirmButtonColor: '#0D7377'
+                    });
+                    templateSelect.value = previousTemplateVal;
+                }
+            })
+            .catch(err => {
+                console.error("Template load failure:", err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'An error occurred while loading the template.',
+                    confirmButtonColor: '#0D7377'
+                });
+                templateSelect.value = previousTemplateVal;
+            });
+    }
+
     const form = document.getElementById('editRecordForm');
 
     form.addEventListener('submit', function(e) {

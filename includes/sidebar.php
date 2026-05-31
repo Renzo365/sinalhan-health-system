@@ -211,6 +211,19 @@ $currentMenu = $active_menu ?? '';
             <i class="bi bi-list"></i>
         </button>
 
+        <!-- Global Search Bar -->
+        <div class="search-bar-global d-none d-md-flex align-items-center position-relative ms-3" style="max-width: 400px; flex-grow: 1;">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-end-0 text-secondary border-color" style="height: 38px;">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="globalPatientSearch" class="form-control border-start-0 border-color" placeholder="Search Patient profile... (Press '/' to focus)" autocomplete="off" style="height: 38px; box-shadow: none;">
+            </div>
+            <!-- Suggestions dropdown drawer -->
+            <ul id="globalSearchSuggestions" class="dropdown-menu shadow border-0 mt-1 w-100 rounded-3 py-2" style="max-height: 320px; overflow-y: auto; display: none; position: absolute; top: 100%; left: 0; z-index: 1050; border: 1px solid var(--border-color) !important;">
+            </ul>
+        </div>
+
         <div class="d-flex align-items-center gap-3">
             <!-- Notifications dropdown -->
             <div class="dropdown">
@@ -466,5 +479,131 @@ document.addEventListener('DOMContentLoaded', function() {
         loadNotifications();
         checkIndexedDBOffline();
     }, 10000);
+    // Global Navbar Search implementation
+    const globalSearchInput = document.getElementById('globalPatientSearch');
+    const globalSearchSuggestions = document.getElementById('globalSearchSuggestions');
+    let searchTimeout = null;
+
+    if (globalSearchInput && globalSearchSuggestions) {
+        // Keyboard Shortcut: press '/' (when not inside an input/textarea) or Ctrl+K to focus
+        document.addEventListener('keydown', function(e) {
+            const activeTag = document.activeElement.tagName.toLowerCase();
+            const isInputActive = activeTag === 'input' || activeTag === 'textarea' || document.activeElement.isContentEditable;
+            
+            if (e.key === '/' && !isInputActive) {
+                e.preventDefault();
+                globalSearchInput.focus();
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                globalSearchInput.focus();
+            }
+        });
+
+        // Keyboard actions: arrows, enter, escape
+        globalSearchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                globalSearchSuggestions.style.display = 'none';
+                globalSearchInput.blur();
+                return;
+            }
+
+            const items = globalSearchSuggestions.querySelectorAll('.dropdown-item');
+            if (items.length === 0) return;
+
+            let activeIndex = -1;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].classList.contains('active')) {
+                    activeIndex = i;
+                    break;
+                }
+            }
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (activeIndex !== -1) {
+                    items[activeIndex].classList.remove('active', 'bg-light');
+                }
+                activeIndex = (activeIndex + 1) % items.length;
+                items[activeIndex].classList.add('active', 'bg-light');
+                items[activeIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (activeIndex !== -1) {
+                    items[activeIndex].classList.remove('active', 'bg-light');
+                }
+                activeIndex = (activeIndex - 1 + items.length) % items.length;
+                items[activeIndex].classList.add('active', 'bg-light');
+                items[activeIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter') {
+                if (activeIndex !== -1) {
+                    e.preventDefault();
+                    items[activeIndex].click();
+                }
+            }
+        });
+
+        globalSearchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                globalSearchSuggestions.style.display = 'none';
+                globalSearchSuggestions.innerHTML = '';
+                return;
+            }
+
+            // Debouncer: wait 250ms
+            searchTimeout = setTimeout(function() {
+                fetch(`<?= BASE_URL ?>ajax/search_patients.php?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const results = data.results || [];
+                        if (results.length > 0) {
+                            let listHtml = '';
+                            results.forEach(pat => {
+                                const patName = pat.last_name + ', ' + pat.first_name + (pat.middle_name ? ' ' + pat.middle_name.substring(0, 1) + '.' : '') + (pat.suffix ? ' ' + pat.suffix : '');
+                                listHtml += `
+                                    <li>
+                                        <a class="dropdown-item py-2 px-3 d-flex justify-content-between align-items-center" href="<?= BASE_URL ?>patients/view.php?id=${pat.id}">
+                                            <div>
+                                                <div class="fw-bold text-primary" style="font-size: 13px;">${patName}</div>
+                                                <small class="text-secondary" style="font-size: 11px;">${pat.sex} | Age: ${pat.age} yrs | DOB: ${pat.birthdate}</small>
+                                            </div>
+                                            <span class="badge bg-light text-dark border" style="font-size: 10px;">${pat.purok || 'N/A'}</span>
+                                        </a>
+                                    </li>
+                                `;
+                            });
+                            globalSearchSuggestions.innerHTML = listHtml;
+                            globalSearchSuggestions.style.display = 'block';
+                        } else {
+                            globalSearchSuggestions.innerHTML = `
+                                <li class="px-3 py-2 text-muted text-center" style="font-size: 12px;">
+                                    <i class="bi bi-person-x me-1"></i> No patients found
+                                </li>
+                            `;
+                            globalSearchSuggestions.style.display = 'block';
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Global search fetch error:", err);
+                    });
+            }, 250);
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!globalSearchInput.contains(e.target) && !globalSearchSuggestions.contains(e.target)) {
+                globalSearchSuggestions.style.display = 'none';
+            }
+        });
+
+        // Show suggestions again if focused and has value
+        globalSearchInput.addEventListener('focus', function() {
+            if (this.value.trim().length >= 2) {
+                globalSearchSuggestions.style.display = 'block';
+            }
+        });
+    }
 });
 </script>
