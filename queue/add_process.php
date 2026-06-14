@@ -44,61 +44,37 @@ try {
         throw new Exception('Please select a valid service category.');
     }
 
-    // Validate active patient
-    $patientStmt = $pdo->prepare("SELECT patient_id, first_name, last_name, suffix FROM patients WHERE patient_id = ? AND is_archived = 0");
+    // 4. Generate Daily Queue Number & Save via Stored Procedure
+    $stmt = $pdo->prepare("CALL sp_assign_queue_ticket(?, ?, ?, @ticket_str, @q_num)");
+    $stmt->execute([$patientId, $serviceId, $_SESSION['user_id']]);
+
+    // Fetch the OUT parameter results from MySQL user session variables
+    $output = $pdo->query("SELECT @ticket_str AS ticket, @q_num AS num")->fetch();
+    $ticketStr = $output['ticket'];
+    $newQueueNumber = (int)$output['num'];
+
+    // Retrieve patient details to format UI notifications and activity logging
+    $patientStmt = $pdo->prepare("SELECT first_name, last_name, suffix FROM patients WHERE patient_id = ?");
     $patientStmt->execute([$patientId]);
     $patient = $patientStmt->fetch();
-    if (!$patient) {
-        throw new Exception('The selected patient profile is either archived or does not exist.');
-    }
+    $patientFullName = $patient['first_name'] . ($patient['suffix'] ? ' ' . $patient['suffix'] : '') . ' ' . $patient['last_name'];
 
-    // Validate active service category
-    $serviceStmt = $pdo->prepare("SELECT service_id, service_name, prefix FROM service_types WHERE service_id = ? AND is_active = 1");
+    // Retrieve service name
+    $serviceStmt = $pdo->prepare("SELECT service_name FROM service_types WHERE service_id = ?");
     $serviceStmt->execute([$serviceId]);
     $serviceExists = $serviceStmt->fetch();
     if (!$serviceExists) {
-        throw new Exception('The selected service category is either deactivated or does not exist.');
+        throw new Exception('The selected service category does not exist.');
     }
 
-    // 4. Generate Daily Queue Number & Save (Database Transaction)
-    $pdo->beginTransaction();
-
-    // Query daily sequence MAX value with write lock
-    $seqStmt = $pdo->query("SELECT COALESCE(MAX(queue_number), 0) + 1 AS next_num FROM queue WHERE queue_date = CURDATE() FOR UPDATE");
-    $seqRow = $seqStmt->fetch();
-    $newQueueNumber = (int)$seqRow['next_num'];
-
-    // Insert Queue Ticket
-    $insertStmt = $pdo->prepare("
-        INSERT INTO queue (
-            patient_id, service_id, queue_date, queue_number, status, assigned_by, is_archived
-        ) VALUES (?, ?, CURDATE(), ?, 'Waiting', ?, 0)
-    ");
-    $insertStmt->execute([
-        $patientId,
-        $serviceId,
-        $newQueueNumber,
-        $_SESSION['user_id']
-    ]);
-
-    $newQueueId = $pdo->lastInsertId();
-    $patientFullName = $patient['first_name'] . ($patient['suffix'] ? ' ' . $patient['suffix'] : '') . ' ' . $patient['last_name'];
-    
-    // Format using dynamic prefix (default to 'Q' if null)
-    $prefix = !empty($serviceExists['prefix']) ? $serviceExists['prefix'] : 'Q';
-    $ticketStr = $prefix . '-' . str_pad($newQueueNumber, 3, '0', STR_PAD_LEFT);
-
-    // Log Activity
+    // Log Activity (sp_log_activity is automatically called inside log_activity)
     log_activity(
         $pdo,
         "Assigned queue ticket #{$ticketStr} to patient '{$patientFullName}'",
         'Queue',
-        $newQueueId,
+        null,
         "Service: {$serviceExists['service_name']}"
     );
-
-    // Commit Transaction
-    $pdo->commit();
 
     // Trigger Notification
     add_notification($pdo, null, 'Ticket Assigned', "Ticket #{$ticketStr} assigned to '{$patientFullName}' ({$serviceExists['service_name']})", 'info');

@@ -24,11 +24,8 @@ function log_activity($pdo, $action, $module, $record_id = null, $details = null
         // Fetch client IP address, default to localhost loopback if missing
         $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
-        // Prepare write-only insert statement
-        $stmt = $pdo->prepare("
-            INSERT INTO activity_log (user_id, action, module, record_id, details, ip_address)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ");
+        // Prepare call to stored procedure
+        $stmt = $pdo->prepare("CALL sp_log_activity(?, ?, ?, ?, ?, ?)");
         
         // Execute parameter bindings (prevents SQL injection)
         $stmt->execute([
@@ -41,7 +38,7 @@ function log_activity($pdo, $action, $module, $record_id = null, $details = null
         ]);
     } catch (PDOException $e) {
         // Log database failure to PHP server error log; don't interrupt active user workflow
-        error_log("Failed to log activity: " . $e->getMessage());
+        error_log("Failed to log activity via stored procedure: " . $e->getMessage());
     }
 }
 

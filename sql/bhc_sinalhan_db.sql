@@ -331,3 +331,121 @@ INSERT INTO system_settings (setting_key, setting_value) VALUES
 ('require_2fa', '0'),
 ('session_lifetime_minutes', '30')
 ON DUPLICATE KEY UPDATE setting_key=setting_key;
+
+-- =============================================================
+-- Stored Procedures Mappings
+-- =============================================================
+
+DELIMITER //
+
+-- 1. sp_log_activity
+-- Encapsulates adding entries to the system audit trail logs.
+CREATE PROCEDURE sp_log_activity(
+    IN p_user_id INT,
+    IN p_action VARCHAR(255),
+    IN p_module VARCHAR(50),
+    IN p_record_id INT,
+    IN p_details TEXT,
+    IN p_ip_address VARCHAR(45)
+)
+BEGIN
+    INSERT INTO activity_log (user_id, action, module, record_id, details, ip_address)
+    VALUES (p_user_id, p_action, p_module, p_record_id, p_details, p_ip_address);
+END //
+
+-- 2. sp_assign_queue_ticket
+-- Safely queries today's sequential ticket count, updates status, and generates a formatted ticket.
+CREATE PROCEDURE sp_assign_queue_ticket(
+    IN p_patient_id INT,
+    IN p_service_id INT,
+    IN p_assigned_by INT,
+    OUT p_ticket_string VARCHAR(20),
+    OUT p_queue_number INT
+)
+BEGIN
+    DECLARE v_prefix VARCHAR(10);
+    DECLARE v_next_num INT;
+    DECLARE v_today DATE;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Failed to assign queue ticket.';
+    END;
+
+    SET v_today = CURDATE();
+
+    START TRANSACTION;
+
+    -- Verify patient exists and is active
+    IF NOT EXISTS (SELECT 1 FROM patients WHERE patient_id = p_patient_id AND is_archived = 0) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Patient record not found or archived.';
+    END IF;
+
+    -- Fetch service type prefix
+    SELECT COALESCE(prefix, 'Q') INTO v_prefix 
+    FROM service_types 
+    WHERE service_id = p_service_id AND is_active = 1;
+    
+    IF v_prefix IS NULL THEN
+        SET v_prefix = 'Q';
+    END IF;
+
+    -- Calculate next sequential ticket number under row lock (concurrency-safe)
+    SELECT COALESCE(MAX(queue_number), 0) + 1 INTO v_next_num
+    FROM queue
+    WHERE queue_date = v_today
+    FOR UPDATE;
+
+    -- Insert queue ticket
+    INSERT INTO queue (patient_id, service_id, queue_date, queue_number, status, assigned_by)
+    VALUES (p_patient_id, p_service_id, v_today, v_next_num, 'Waiting', p_assigned_by);
+
+    -- Format outputs
+    SET p_queue_number = v_next_num;
+    SET p_ticket_string = CONCAT(v_prefix, '-', LPAD(v_next_num, 3, '0'));
+
+    COMMIT;
+END //
+
+-- 3. sp_resolve_overdue_appointments
+-- Transition scheduled appointments before today to 'No-Show' and logs it to audit trail in one batch transaction.
+CREATE PROCEDURE sp_resolve_overdue_appointments(
+    IN p_admin_id INT,
+    OUT p_resolved_count INT
+)
+BEGIN
+    DECLARE v_updated INT DEFAULT 0;
+    DECLARE v_today DATE;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Failed to execute batch appointment resolution.';
+    END;
+
+    SET v_today = CURDATE();
+
+    START TRANSACTION;
+
+    -- Perform bulk transition
+    UPDATE appointments 
+    SET status = 'No-Show' 
+    WHERE appointment_date < v_today 
+      AND status = 'Scheduled' 
+      AND is_archived = 0;
+      
+    SET v_updated = ROW_COUNT();
+
+    -- Log to audit trail if records were updated
+    IF v_updated > 0 THEN
+        INSERT INTO activity_log (user_id, action, module, details) 
+        VALUES (p_admin_id, 'Update', 'Appointment', CONCAT('Batch resolved ', v_updated, ' overdue appointments as No-Show.'));
+    END IF;
+
+    SET p_resolved_count = v_updated;
+
+    COMMIT;
+END //
+
+DELIMITER ;

@@ -34,45 +34,19 @@ require_once __DIR__ . '/../config/database.php';
 try {
     $pdo = Database::getInstance()->getConnection();
     
-    // Begin transaction to ensure database atomicity/consistency
-    $pdo->beginTransaction();
+    // Execute the stored procedure to resolve overdue appointments and log changes
+    $stmt = $pdo->prepare("CALL sp_resolve_overdue_appointments(?, @resolved_count)");
+    $stmt->execute([$_SESSION['user_id']]);
     
-    $todayStr = date('Y-m-d');
+    // Fetch output variable of updated appointments count
+    $resolvedCount = (int)$pdo->query("SELECT @resolved_count")->fetchColumn();
     
-    // Update query: Target all active (not archived) scheduled bookings whose dates have passed
-    $updateStmt = $pdo->prepare("
-        UPDATE appointments 
-        SET status = 'No-Show' 
-        WHERE appointment_date < ? 
-          AND status = 'Scheduled' 
-          AND is_archived = 0
-    ");
-    $updateStmt->execute([$todayStr]);
-    $updatedCount = $updateStmt->rowCount();
-    
-    if ($updatedCount > 0) {
-        // Log this action to the activity audit logs for system tracking
-        $logStmt = $pdo->prepare("
-            INSERT INTO activity_log (user_id, action, module, details) 
-            VALUES (?, 'Update', 'Appointments', ?)
-        ");
-        $logStmt->execute([
-            $_SESSION['user_id'], 
-            "Batch updated $updatedCount overdue appointments to 'No-Show'"
-        ]);
-        
-        $pdo->commit();
-        $_SESSION['success_msg'] = "Successfully resolved $updatedCount past-due appointments as 'No-Show'.";
+    if ($resolvedCount > 0) {
+        $_SESSION['success_msg'] = "Successfully resolved $resolvedCount past-due appointments as 'No-Show'.";
     } else {
-        // Rollback or commit is fine since nothing changed, we commit
-        $pdo->commit();
         $_SESSION['info_msg'] = "No past-due scheduled appointments were found to resolve.";
     }
 } catch (Exception $e) {
-    // If anything fails, rollback the transaction to prevent half-finished updates
-    if (isset($pdo) && $pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
     error_log("Batch auto no-show update failed: " . $e->getMessage());
     $_SESSION['error_msg'] = "A database error occurred during batch update: " . $e->getMessage();
 }
