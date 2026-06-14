@@ -1,5 +1,14 @@
 // service-worker.js
 
+/**
+ * PWA Service Worker for Sinalhan Patient Management System
+ * 
+ * Purpose:
+ * Caches core asset files (CSS, JS, CDNs) to enable offline capabilities.
+ * If internet connection is lost, requests for pages are intercepted to serve
+ * cached assets, or redirect to `offline.php` if an uncached page is requested.
+ */
+
 const CACHE_NAME = 'sinalhan-hc-v1';
 const ASSETS_TO_CACHE = [
   'offline.php',
@@ -17,7 +26,7 @@ const ASSETS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js'
 ];
 
-// Install Event - Pre-cache essential files
+// Install Event - Pre-cache essential files for offline rendering
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -25,6 +34,7 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
+  // Force active service worker activation immediately
   self.skipWaiting();
 });
 
@@ -68,16 +78,19 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        // If network request fails, look in cache
+        // If the network request fails (e.g. device is offline), look for a cached version
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) {
             return cachedResponse;
           }
 
-          // If requesting an HTML page and not found, show offline.php
-          if (event.request.headers.get('accept').includes('text/html')) {
-            // Find base path dynamically from the service worker's registration scope
+          // Safe check for HTML page requests. 
+          // Guard: Verify event.request.headers.get('accept') is not null/undefined before checking '.includes()'
+          const acceptHeader = event.request.headers.get('accept');
+          if (acceptHeader && acceptHeader.includes('text/html')) {
+            // Find application base path dynamically from the service worker's registration scope
             const basePath = new URL(self.registration.scope).pathname;
+            // Return cached offline page shell
             return caches.match(basePath + 'offline.php') || caches.match('offline.php');
           }
         });

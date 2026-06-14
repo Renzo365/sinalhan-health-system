@@ -380,13 +380,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // PWA Offline check for patient list
-    const DB_NAME = 'sinalhan_offline_db';
+    // Note: We use DB_NAME = 'SinalhanOfflineDB' and STORE_NAME = 'pending_patients' to match the database in register_offline.php
+    const DB_NAME = 'SinalhanOfflineDB';
     const DB_VERSION = 1;
-    const STORE_NAME = 'patients';
+    const STORE_NAME = 'pending_patients';
 
+    // Open database connection
     const dbRequest = indexedDB.open(DB_NAME, DB_VERSION);
     dbRequest.onsuccess = function(event) {
         const db = event.target.result;
+        // Verify object store exists
         if (db.objectStoreNames.contains(STORE_NAME)) {
             const transaction = db.transaction([STORE_NAME], 'readonly');
             const store = transaction.objectStore(STORE_NAME);
@@ -394,6 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             countRequest.onsuccess = function() {
                 const count = countRequest.result;
+                // If there are unsynced records, display warning alert banner to the user
                 if (count > 0) {
                     const indicator = document.getElementById('list-sync-indicator');
                     indicator.classList.remove('d-none');

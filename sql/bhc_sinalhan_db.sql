@@ -226,6 +226,35 @@ CREATE TABLE IF NOT EXISTS activity_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================================
+-- Table: system_settings
+-- Stores system configuration settings key-value pairs
+-- =============================================================
+CREATE TABLE IF NOT EXISTS system_settings (
+    setting_key VARCHAR(100) NOT NULL PRIMARY KEY,
+    setting_value TEXT DEFAULT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================================
+-- Table: notifications
+-- Stores user-specific and broadcast notifications
+-- =============================================================
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT DEFAULT NULL COMMENT 'Target user, NULL means global broadcast',
+    title VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info' COMMENT 'info, success, warning, danger, security',
+    is_read TINYINT(1) DEFAULT 0 COMMENT '0=unread, 1=read',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_is_read (is_read),
+    CONSTRAINT fk_notifications_user 
+        FOREIGN KEY (user_id) REFERENCES users(user_id) 
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================================
 -- Seeding Default Admin Account (password: admin123)
 -- =============================================================
 INSERT INTO users (username, password_hash, first_name, last_name, email, role, is_active)
@@ -288,3 +317,16 @@ ON DUPLICATE KEY UPDATE service_name=service_name;
 -- =============================================================
 INSERT INTO activity_log (user_id, action, module, details, ip_address)
 VALUES (1, 'System initialized', 'System', 'Database seeded with initial data', '127.0.0.1');
+
+-- =============================================================
+-- Seeding Default System Settings
+-- =============================================================
+INSERT INTO system_settings (setting_key, setting_value) VALUES
+('clinic_name', 'Barangay Sinalhan Health Center'),
+('clinic_address', 'Barangay Sinalhan, Santa Rosa City, Laguna, Philippines'),
+('clinic_contact', '049-508-XXXX'),
+('clinic_email', 'info@sinalhan-hc.gov.ph'),
+('clinic_logo', ''),
+('require_2fa', '0'),
+('session_lifetime_minutes', '30')
+ON DUPLICATE KEY UPDATE setting_key=setting_key;

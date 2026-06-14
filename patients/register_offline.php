@@ -190,11 +190,13 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <script>
 // 1. IndexedDB Initialization
-const DB_NAME = 'sinalhan_offline_db';
+// Note: We use DB_NAME = 'SinalhanOfflineDB' and STORE_NAME = 'pending_patients' to match the central settings manager inspector and top notifications bar.
+const DB_NAME = 'SinalhanOfflineDB';
 const DB_VERSION = 1;
-const STORE_NAME = 'patients';
+const STORE_NAME = 'pending_patients';
 let db = null;
 
+// Open/create the client-side IndexedDB database inside the browser
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 
 request.onerror = function(event) {
@@ -202,12 +204,15 @@ request.onerror = function(event) {
 };
 
 request.onsuccess = function(event) {
+    // Store active database connection handle
     db = event.target.result;
+    // Update local pending sync banner badge count
     updatePendingBadge();
 };
 
 request.onupgradeneeded = function(event) {
     const upgradeDb = event.target.result;
+    // Create object store if it does not exist in browser storage
     if (!upgradeDb.objectStoreNames.contains(STORE_NAME)) {
         upgradeDb.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
         console.log('IndexedDB store created successfully.');

@@ -2,13 +2,22 @@
 // includes/notification_helper.php
 
 /**
+ * System In-App Notification Engine
+ * 
+ * Purpose:
+ * Manages the generation, retrieval, and status tracking of user notifications.
+ * Supports targeted notifications (user_id is set) as well as global broadcasts (user_id is null)
+ * which are shown to all active health staff members.
+ */
+
+/**
  * Creates a system notification.
  * If $userId is null, the notification is treated as a global/broadcast message for all staff.
  *
- * @param PDO $pdo DB connection
+ * @param PDO $pdo DB connection handle
  * @param int|null $userId Target user ID, or null for global broadcast
- * @param string $title Header of the notification
- * @param string $message Detailed body text
+ * @param string $title Header of the notification alert
+ * @param string $message Detailed body text of the alert
  * @param string $type Visual theme of the alert ('info', 'success', 'warning', 'danger', 'security')
  * @return bool True on success, false on failure
  */
@@ -27,9 +36,10 @@ function add_notification($pdo, $userId, $title, $message, $type = 'info') {
 
 /**
  * Helper to fetch the Admin's user ID dynamically.
+ * Useful for routing security alerts directly to the system administrator.
  *
- * @param PDO $pdo DB connection
- * @return int|null User ID of the administrator
+ * @param PDO $pdo DB connection handle
+ * @return int|null User ID of the administrator, or null if not found
  */
 function get_admin_user_id($pdo) {
     try {
@@ -42,12 +52,12 @@ function get_admin_user_id($pdo) {
 }
 
 /**
- * Fetches the notifications list for a specific user (including broadcasts).
+ * Fetches the notifications list for a specific user (including global broadcasts).
  *
- * @param PDO $pdo DB connection
+ * @param PDO $pdo DB connection handle
  * @param int $userId Target user ID
- * @param int $limit Max results to return
- * @return array List of notifications
+ * @param int $limit Max results to return for UI dropdowns
+ * @return array List of notification records
  */
 function fetch_user_notifications($pdo, $userId, $limit = 5) {
     try {
@@ -58,7 +68,7 @@ function fetch_user_notifications($pdo, $userId, $limit = 5) {
             ORDER BY created_at DESC, notification_id DESC
             LIMIT ?
         ");
-        // PDO needs limit as integer parameter if emulated prepares are off
+        // PDO needs limit bound as an integer parameter if emulated prepares are disabled
         $stmt->bindValue(1, $userId, PDO::PARAM_INT);
         $stmt->bindValue(2, $limit, PDO::PARAM_INT);
         $stmt->execute();
@@ -71,8 +81,9 @@ function fetch_user_notifications($pdo, $userId, $limit = 5) {
 
 /**
  * Gets the count of unread notifications for a specific user (including broadcasts).
+ * Used to update the notification bell count dynamically in sidebar updates.
  *
- * @param PDO $pdo DB connection
+ * @param PDO $pdo DB connection handle
  * @param int $userId Target user ID
  * @return int Number of unread alerts
  */
@@ -92,12 +103,13 @@ function get_unread_count($pdo, $userId) {
 }
 
 /**
- * Marks a notification as read.
+ * Marks a specific notification as read.
+ * Checks target user ownership or global broadcast availability for safety.
  *
- * @param PDO $pdo DB connection
+ * @param PDO $pdo DB connection handle
  * @param int $notificationId Notification record ID
  * @param int $userId Target user ID verifying ownership/access
- * @return bool True on success
+ * @return bool True on success, false on exception
  */
 function mark_notification_as_read($pdo, $notificationId, $userId) {
     try {
@@ -114,11 +126,11 @@ function mark_notification_as_read($pdo, $notificationId, $userId) {
 }
 
 /**
- * Marks all notifications for a specific user as read.
+ * Marks all notifications for a specific user (including broadcasts) as read.
  *
- * @param PDO $pdo DB connection
+ * @param PDO $pdo DB connection handle
  * @param int $userId Target user ID
- * @return bool True on success
+ * @return bool True on success, false on exception
  */
 function mark_all_notifications_as_read($pdo, $userId) {
     try {
@@ -133,3 +145,4 @@ function mark_all_notifications_as_read($pdo, $userId) {
         return false;
     }
 }
+

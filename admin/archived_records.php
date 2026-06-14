@@ -3,6 +3,16 @@
 require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../includes/auth_guard.php';
 require_once __DIR__ . '/../includes/role_guard.php';
+// Include encryption helper for decrypting sensitive patient health complaints
+require_once __DIR__ . '/../includes/encryption.php';
+
+/**
+ * Archived Records Management (Soft-Delete Recovery Bin)
+ * 
+ * Purpose:
+ * Provides administrators a recovery panel to view and restore soft-deleted (archived)
+ * records (Patients, Appointments, Queue Tickets, and Health Records).
+ */
 
 // Enforce admin-only access
 require_role(['admin']);
@@ -269,9 +279,11 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <tbody>
                                 <?php foreach ($archivedHealthRecords as $h): ?>
                                     <?php
-                                        $complaintShort = htmlspecialchars($h['chief_complaint'] ?? '');
-                                        if (strlen($complaintShort) > 60) {
-                                            $complaintShort = substr($complaintShort, 0, 57) . '...';
+                                        // Decrypt the chief complaint from AES-256 ciphertext before display
+                                        $decryptedComplaint = decrypt_data($h['chief_complaint'] ?? '');
+                                        $complaintShort = htmlspecialchars($decryptedComplaint);
+                                        if (mb_strlen($complaintShort) > 60) {
+                                            $complaintShort = mb_substr($complaintShort, 0, 57) . '...';
                                         }
                                     ?>
                                     <tr>
