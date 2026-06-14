@@ -1,6 +1,6 @@
 # Barangay Sinalhan Patient Management System - Features Catalog
 
-This document details all features, security implementations, offline capabilities, and role permissions of the **Barangay Sinalhan Patient Management System** (Santa Rosa City, Laguna).
+This document details all features, security implementations, offline capabilities, and role permissions of the **Barangay Sinalhan Patient Management System** (Santa Rosa City, Laguna, Philippines).
 
 ---
 
@@ -8,8 +8,8 @@ This document details all features, security implementations, offline capabiliti
 * **Backend:** Native PHP with dynamic timezone settings (`Asia/Manila`) and strict PDO MySQL singleton architecture.
 * **Frontend:** Bootstrap 5, Bootstrap Icons, Vanilla CSS, and SweetAlert2 interactive popups.
 * **Real-time Engine:** Server-Sent Events (SSE) streaming live waiting lists from `queue_sse.php`.
-* **Offline Engine:** PWA Service Worker caching and browser-native IndexedDB database (`SinalhanOfflineDB`).
-* **Security Layer:** OpenSSL AES-256-CBC cryptographic column encryption and TOTP Base32 verification.
+* **Offline Engine:** PWA Service Worker caching and browser-native IndexedDB database (`SinalhanOfflineDB` with store `pending_patients`).
+* **Security Layer:** OpenSSL AES-256-CBC cryptographic column encryption, CSRF protection, and TOTP Base32 verification.
 
 ---
 
@@ -17,8 +17,9 @@ This document details all features, security implementations, offline capabiliti
 
 ### 1. 🔐 Authentication, Authorization & MFA
 * **Modern Login Interface:** A glassmorphic login screen featuring password-toggle visibility and CDNs-protected library modules.
+* **CSRF Protection:** Secure session-bound CSRF token validation on all state-changing POST requests (login, registering, scheduling, modifying).
 * **Role Guards:** Strict PHP authentication checks and role-based page protection restricting routes to (`admin`, `staff`, or `bhw`).
-* **Multi-Factor Authentication (MFA):** Google Authenticator-compliant TOTP 2-Factor setup page inside User Profiles. Verification includes calendar drift checks.
+* **Multi-Factor Authentication (MFA):** Google Authenticator-compliant TOTP 2-Factor setup page inside User Profiles. Verification includes calendar drift checks (+/- 30s steps discrepancy tolerance).
 * **Complexity Rules:** High-security password validation requiring 8+ characters, uppercase, lowercase, numbers, and special symbols during registration or reset.
 
 ### 2. 📇 Patient Care & Directory
@@ -31,15 +32,18 @@ This document details all features, security implementations, offline capabiliti
 * **Vital Signs Tracking:** Logs Systolic/Diastolic Blood Pressure, Temperature, Weight (kg), Height (cm), Heart Rate (bpm), and Respiration Rate (bpm).
 * **Automatic BMI Calculator:** Calculates BMI on form entry and displays obesity/underweight warnings in real-time.
 * **Clinical Records Encryption:** Strict encryption of chief complaints, diagnoses, treatments, prescriptions, and notes.
+* **Consultation Templates:** Database-driven template loading for standard clinical workflows (cough & cold, prenatal, hypertension follow-up, pediatric immunization). Pre-fills chief complaint, diagnosis, treatment, and prescription fields automatically via AJAX to accelerate check-ups.
 * **History Tab Integration:** Dynamic patient consultation charts rendered inside demographic profile files.
 
 ### 4. 📅 Appointments Scheduler
 * **Calendar Scheduler:** Schedules patient consultations.
 * **Validation Tally:** Blocks the scheduling of past dates or times.
 * **Status Lifecycles:** Renders appointments under dynamic states (`Scheduled`, `Completed`, `Cancelled`, `No-Show`) with color-coded badges.
+* **Bulk Overdue Resolution:** Admin-only dashboard feature to automatically mark all past-due scheduled appointments as "No-Show" in a single transaction.
 
 ### 5. 🚶 Daily Queue Management
 * **Sequential Ticketing:** Generates sequential queue numbers resetting automatically at 12:00 AM every calendar day.
+* **Service Queue Prefixes:** Customizes ticket prefixes for each service category (e.g. `GEN` for General, `PRE` for Prenatal) stored in `service_types` table.
 * **Branded Print Overlays:** Receipt SweetAlert mockups with direct print triggers containing the patient's name, booking number, and service.
 * **Kanban Queue Manager:** A three-column grid board (Waiting, Serving, Completed) for staff.
 * **Waiting Room Monitor (`display.php`):** A dark fullscreen display utilizing SSE streams to poll calls. Features chime sound alerts and Text-to-Speech vocal call-outs.
@@ -50,11 +54,11 @@ This document details all features, security implementations, offline capabiliti
 
 ### 7. 🛡️ Audit Trail & Deleted Archives
 * **Activity Logs:** Write-only logging capturing user ID, activity category (Patient, Consultation, Appointment, Queue, Security, Auth, System), IP address, and details.
-* **Recovery Bin (`archived_records.php`):** A centralized tabbed recovery archive for soft-deleted patients, appointments, queue tickets, and health records, enabling one-click restoration.
+* **Recovery Bin (`archived_records.php`):** A centralized tabbed recovery archive for soft-deleted patients, appointments, queue tickets, and health records, enabling one-click restoration. Chief complaints are securely decrypted prior to listing.
 
 ### 8. 📴 PWA & Offline Sync
 * **Offline Fallbacks:** Modern `manifest.json` and cache control fallbacks to redirect BHWs during network failures to offline registration.
-* **IndexedDB Local Store:** Stores patient details locally. Restoring internet connection dynamically triggers sync notifications on the navigation bar.
+* **IndexedDB Local Store (`SinalhanOfflineDB`):** Stores patient details locally under the `pending_patients` store. Restoring internet connection dynamically triggers sync notifications on the navigation bar.
 
 ### 9. 🔔 Interactive Notification Center
 * **Live Notifications Bell:** Embedded navigation bar dropdown overlay tracking unread badge counts, online status banners, and local IndexedDB warning alerts.
@@ -62,11 +66,10 @@ This document details all features, security implementations, offline capabiliti
 
 ### 10. ⚙️ System Settings (Central Configurations)
 * **Clinic Branding:** Customizes clinic name, address, contact, email, and uploads a branding logo.
-* **Service Queue Prefixes:** Customizes ticket prefixes for each service category (e.g. `GEN` for General, `PRE` for Prenatal).
 * **Security Controls:** Customizes inactivity timers and enforcements of TOTP 2FA policies.
-* **Master Key Rotation:** A secure cryptographic form to rotate the AES-256 keys.
+* **Master Key Rotation:** A secure cryptographic form to rotate the AES-256 keys, decrypting and re-encrypting all patient database fields in a single transaction.
 * **Data Exporters:** Native database SQL backup downloader and log purging.
-* **Theme Preferences:** Toggles Dark Theme modes and text scaling (Normal, Medium, Large) globally.
+* **Theme Preferences:** Toggles Dark Theme modes and text scaling (Normal, Medium, Large) globally, saving user choices to the database and syncs to local storage.
 
 ---
 
@@ -88,15 +91,3 @@ This document details all features, security implementations, offline capabiliti
 | **Generate Daily Queue Tickets** | Yes | Yes | Yes |
 | **Book & Modify Appointments** | Yes | Yes | Yes |
 | **Inspect PWA Storage & Adjust UI Size** | Yes | Yes | Yes |
-
----
-
-## 🚀 Getting Started
-
-1. **Start Apache & MySQL:** Open XAMPP and run Apache and MySQL.
-2. **Setup DB:** Create a database named `bhc_sinalhan_db` and import [bhc_sinalhan_db.sql](file:///c:/xampp/htdocs/sinalhan-health-system/sql/bhc_sinalhan_db.sql).
-3. **Open App:** Navigate to `http://localhost/sinalhan-health-system/`.
-4. **Log In:** Use testing credentials:
-   * **Admin:** Username: `admin` | Password: `admin123`
-   * **Staff:** Username: `staff01` | Password: `staff123`
-   * **BHW:** Username: `bhw01` | Password: `bhw123`

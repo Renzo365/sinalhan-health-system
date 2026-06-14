@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS patients (
 CREATE TABLE IF NOT EXISTS service_types (
     service_id INT AUTO_INCREMENT PRIMARY KEY,
     service_name VARCHAR(100) NOT NULL UNIQUE,
+    prefix VARCHAR(10) DEFAULT NULL COMMENT 'Queue ticketing prefix e.g. GEN, PRE',
     description TEXT DEFAULT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=active, 0=deactivated',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -297,19 +298,19 @@ VALUES (
 -- =============================================================
 -- Seeding Service Types
 -- =============================================================
-INSERT INTO service_types (service_name, description, is_active) VALUES
-('General Consultation', 'General medical consultation and check-up', 1),
-('Prenatal Care', 'Prenatal check-up and maternal health services', 1),
-('Immunization', 'Vaccination services for children and adults', 1),
-('Family Planning', 'Family planning counseling and services', 1),
-('Dental Services', 'Basic dental check-up and treatment', 1),
-('TB DOTS', 'Tuberculosis Directly Observed Treatment, Short-Course', 1),
-('Animal Bite Treatment', 'Anti-rabies vaccination and wound treatment', 1),
-('Blood Pressure Monitoring', 'Routine blood pressure check and monitoring', 1),
-('Nutrition Counseling', 'Nutritional assessment and dietary counseling', 1),
-('Laboratory Request', 'Laboratory test requests and referrals', 1),
-('Medical Certificate', 'Issuance of medical certificates', 1),
-('Wound Care', 'Wound cleaning, dressing, and minor surgical care', 1)
+INSERT INTO service_types (service_name, prefix, description, is_active) VALUES
+('General Consultation', 'GEN', 'General medical consultation and check-up', 1),
+('Prenatal Care', 'PRE', 'Prenatal check-up and maternal health services', 1),
+('Immunization', 'IMM', 'Vaccination services for children and adults', 1),
+('Family Planning', 'FAM', 'Family planning counseling and services', 1),
+('Dental Services', 'DEN', 'Basic dental check-up and treatment', 1),
+('TB DOTS', 'TBD', 'Tuberculosis Directly Observed Treatment, Short-Course', 1),
+('Animal Bite Treatment', 'ABT', 'Anti-rabies vaccination and wound treatment', 1),
+('Blood Pressure Monitoring', 'BPM', 'Routine blood pressure check and monitoring', 1),
+('Nutrition Counseling', 'NUT', 'Nutritional assessment and dietary counseling', 1),
+('Laboratory Request', 'LAB', 'Laboratory test requests and referrals', 1),
+('Medical Certificate', 'MC', 'Issuance of medical certificates', 1),
+('Wound Care', 'WND', 'Wound cleaning, dressing, and minor surgical care', 1)
 ON DUPLICATE KEY UPDATE service_name=service_name;
 
 -- =============================================================
