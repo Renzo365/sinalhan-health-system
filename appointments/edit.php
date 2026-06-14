@@ -61,6 +61,11 @@ try {
     $servicesStmt = $pdo->query("SELECT service_id, service_name FROM service_types WHERE is_active = 1 OR service_id = " . (int)$a['service_id'] . " ORDER BY service_name ASC");
     $services = $servicesStmt->fetchAll();
 
+    // Define minimum date logic: if the appointment's original date is in the past, let them keep it.
+    // Otherwise, restrict them to today or future dates.
+    $todayDate = date('Y-m-d');
+    $minDate = ($a['appointment_date'] < $todayDate) ? $a['appointment_date'] : $todayDate;
+
 } catch (Exception $e) {
     error_log("Failed to load appointment for editing: " . $e->getMessage());
     $_SESSION['alert'] = [
@@ -136,7 +141,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <!-- Appointment Date -->
                             <div class="col-md-4">
                                 <label for="appointment_date" class="form-label font-weight-bold mb-1">Appointment Date <span class="text-danger">*</span></label>
-                                <input type="date" name="appointment_date" id="appointment_date" class="form-control" value="<?= htmlspecialchars($a['appointment_date']) ?>" required>
+                                <input type="date" name="appointment_date" id="appointment_date" class="form-control" value="<?= htmlspecialchars($a['appointment_date']) ?>" min="<?= $minDate ?>" required>
                             </div>
 
                             <!-- Appointment Time -->
@@ -182,6 +187,75 @@ require_once __DIR__ . '/../includes/sidebar.php';
         </div>
     </div>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('appointment_date');
+    const originalDate = "<?= htmlspecialchars($a['appointment_date']) ?>";
+    const todayStr = "<?= date('Y-m-d') ?>";
+    
+    if (dateInput) {
+        dateInput.addEventListener('change', function() {
+            // Prevent choosing a past date unless it is the original appointment date
+            if (this.value < todayStr && this.value !== originalDate) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Appointment Date',
+                    text: 'You cannot reschedule an appointment to a date in the past.',
+                    confirmButtonColor: '#0D7377'
+                });
+                this.value = originalDate;
+            } else {
+                // If the date is valid, run conflict check
+                checkConflict();
+            }
+        });
+    }
+
+    // Real-time double booking and conflict checks
+    function checkConflict() {
+        const timeInput = document.getElementById('appointment_time');
+        
+        if (!dateInput || !dateInput.value) {
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('patient_id', '<?= (int)$a['patient_id'] ?>');
+        formData.append('appointment_id', '<?= (int)$a['appointment_id'] ?>');
+        formData.append('appointment_date', dateInput.value);
+        if (timeInput && timeInput.value) {
+            formData.append('appointment_time', timeInput.value);
+        }
+        formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
+        
+        fetch('../ajax/check_appointment_conflict.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.conflict) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Schedule Conflict Alert',
+                    text: data.message,
+                    confirmButtonColor: '#0D7377'
+                });
+                if (timeInput) {
+                    timeInput.value = '';
+                }
+            }
+        })
+        .catch(err => console.error('Error checking conflict:', err));
+    }
+
+    const timeInputEl = document.getElementById('appointment_time');
+    if (timeInputEl) {
+        timeInputEl.addEventListener('change', checkConflict);
+    }
+});
+</script>
 
 <?php
 require_once __DIR__ . '/../includes/alert.php';

@@ -60,7 +60,7 @@ try {
 
     // Check target appointment record existence and active status
     $stmt = $pdo->prepare("
-        SELECT a.appointment_id, a.patient_id, a.status AS old_status, p.first_name, p.last_name, p.suffix 
+        SELECT a.appointment_id, a.patient_id, a.appointment_date, a.status AS old_status, p.first_name, p.last_name, p.suffix 
         FROM appointments a
         JOIN patients p ON a.patient_id = p.patient_id
         WHERE a.appointment_id = ? AND a.is_archived = 0
@@ -69,6 +69,36 @@ try {
     $app = $stmt->fetch();
     if (!$app) {
         throw new Exception('The appointment record does not exist or has been archived.');
+    }
+
+    // Date check: cannot reschedule to a past date unless keeping the original appointment date
+    $todayStr = date('Y-m-d');
+    if ($appointmentDate < $todayStr && $appointmentDate !== $app['appointment_date']) {
+        throw new Exception('Appointment date cannot be scheduled in the past.');
+    }
+
+    // Check for double-booking / schedule conflict (Same patient, same date, same time, excluding current ID)
+    $conflictSql = "
+        SELECT COUNT(*) FROM appointments 
+        WHERE patient_id = ? 
+          AND appointment_date = ? 
+          AND appointment_id != ?
+          AND is_archived = 0 
+          AND status != 'Cancelled'
+    ";
+    $conflictParams = [$app['patient_id'], $appointmentDate, $appId];
+    if ($appointmentTime) {
+        $formattedTime = date('H:i:00', strtotime($appointmentTime));
+        $conflictSql .= " AND appointment_time = ? ";
+        $conflictParams[] = $formattedTime;
+    } else {
+        $conflictSql .= " AND appointment_time IS NULL ";
+    }
+    
+    $conflictStmt = $pdo->prepare($conflictSql);
+    $conflictStmt->execute($conflictParams);
+    if ((int)$conflictStmt->fetchColumn() > 0) {
+        throw new Exception('The patient already has a scheduled appointment at this date and time slot.');
     }
 
     // Check service category existence

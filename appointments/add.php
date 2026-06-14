@@ -284,6 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     patientSearchInput.value = patName;
                                     patientSearchInput.classList.add('is-valid');
                                     patientSearchSuggestions.style.display = 'none';
+                                    checkConflict();
                                 });
                             });
                         } else {
@@ -340,6 +341,54 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Real-time double booking and conflict checks
+    function checkConflict() {
+        const patientInput = document.querySelector('input[name="patient_id"]');
+        const dateInput = document.getElementById('appointment_date');
+        const timeInput = document.getElementById('appointment_time');
+        
+        if (!patientInput || !patientInput.value || !dateInput || !dateInput.value) {
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('patient_id', patientInput.value);
+        formData.append('appointment_date', dateInput.value);
+        if (timeInput && timeInput.value) {
+            formData.append('appointment_time', timeInput.value);
+        }
+        formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
+        
+        fetch('../ajax/check_appointment_conflict.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.conflict) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Schedule Conflict Alert',
+                    text: data.message,
+                    confirmButtonColor: '#0D7377'
+                });
+                if (timeInput) {
+                    timeInput.value = '';
+                }
+            }
+        })
+        .catch(err => console.error('Error checking conflict:', err));
+    }
+
+    const dateInputEl = document.getElementById('appointment_date');
+    const timeInputEl = document.getElementById('appointment_time');
+    if (dateInputEl) {
+        dateInputEl.addEventListener('change', checkConflict);
+    }
+    if (timeInputEl) {
+        timeInputEl.addEventListener('change', checkConflict);
+    }
 });
 </script>
 

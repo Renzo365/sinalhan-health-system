@@ -61,6 +61,29 @@ try {
         throw new Exception('Appointment date cannot be in the past.');
     }
 
+    // Check for double-booking / schedule conflict (Same patient, same date, same time)
+    $conflictSql = "
+        SELECT COUNT(*) FROM appointments 
+        WHERE patient_id = ? 
+          AND appointment_date = ? 
+          AND is_archived = 0 
+          AND status != 'Cancelled'
+    ";
+    $conflictParams = [$patientId, $appointmentDate];
+    if ($appointmentTime) {
+        $formattedTime = date('H:i:00', strtotime($appointmentTime));
+        $conflictSql .= " AND appointment_time = ? ";
+        $conflictParams[] = $formattedTime;
+    } else {
+        $conflictSql .= " AND appointment_time IS NULL ";
+    }
+    
+    $conflictStmt = $pdo->prepare($conflictSql);
+    $conflictStmt->execute($conflictParams);
+    if ((int)$conflictStmt->fetchColumn() > 0) {
+        throw new Exception('The patient already has a scheduled appointment at this date and time slot.');
+    }
+
     // Check patient existence and active status
     $patientStmt = $pdo->prepare("SELECT patient_id, first_name, last_name, suffix FROM patients WHERE patient_id = ? AND is_archived = 0");
     $patientStmt->execute([$patientId]);
@@ -115,8 +138,8 @@ try {
         'message' => "Successfully scheduled check-up for '{$patientFullName}'."
     ];
 
-    // Prefer redirect to the patient profile tab
-    header('Location: ' . BASE_URL . 'patients/view.php?id=' . $patientId);
+    // Redirect to the appointments directory list page
+    header('Location: ' . BASE_URL . 'appointments/list.php');
     if (!defined('TESTING')) exit;
 
 } catch (Exception $e) {

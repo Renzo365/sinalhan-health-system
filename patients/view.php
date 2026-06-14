@@ -341,9 +341,14 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                                     <td><span class="<?= $statusClass ?>"><?= htmlspecialchars($a['status']) ?></span></td>
                                                     <?php if ($role === 'admin' || $role === 'staff' || $role === 'bhw'): ?>
                                                         <td class="text-center">
-                                                            <a href="<?= BASE_URL ?>appointments/edit.php?id=<?= $a['appointment_id'] ?>" class="btn btn-sm btn-outline-primary border-0 p-1" title="Modify Appointment">
-                                                                <i class="bi bi-pencil-square fs-6"></i>
-                                                            </a>
+                                                            <div class="d-flex justify-content-center gap-1">
+                                                                <a href="<?= BASE_URL ?>appointments/view.php?id=<?= $a['appointment_id'] ?>" class="btn btn-sm btn-outline-info border-0 p-1" title="View Appointment Detail">
+                                                                    <i class="bi bi-eye-fill fs-6"></i>
+                                                                </a>
+                                                                <a href="<?= BASE_URL ?>appointments/edit.php?id=<?= $a['appointment_id'] ?>" class="btn btn-sm btn-outline-primary border-0 p-1" title="Modify Appointment">
+                                                                    <i class="bi bi-pencil-square fs-6"></i>
+                                                                </a>
+                                                            </div>
                                                         </td>
                                                     <?php endif; ?>
                                                 </tr>

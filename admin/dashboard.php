@@ -17,6 +17,7 @@ $extra_js = ['assets/js/dashboard.js'];
 
 // Connect DB to query recent activity logs
 require_once __DIR__ . '/../config/database.php';
+$overdueCount = 0; // Initialize overdueCount fallback
 try {
     $pdo = Database::getInstance()->getConnection();
     
@@ -29,8 +30,18 @@ try {
         LIMIT 5
     ");
     $recentLogs = $logStmt->fetchAll();
+
+    // Query past-due (overdue) appointments count (Scheduled but date is in the past)
+    $overdueStmt = $pdo->query("
+        SELECT COUNT(*) 
+        FROM appointments 
+        WHERE appointment_date < CURRENT_DATE 
+          AND status = 'Scheduled' 
+          AND is_archived = 0
+    ");
+    $overdueCount = (int)$overdueStmt->fetchColumn();
 } catch (Exception $e) {
-    error_log("Dashboard logs fetch failure: " . $e->getMessage());
+    error_log("Dashboard logs and overdue count fetch failure: " . $e->getMessage());
     $recentLogs = [];
 }
 
@@ -49,6 +60,29 @@ require_once __DIR__ . '/../includes/sidebar.php';
         </div>
 
     </div>
+    <!-- Overdue Appointments Alert Banner -->
+    <?php if ($overdueCount > 0): ?>
+        <div class="alert alert-warning border-warning shadow-sm d-flex align-items-center justify-content-between gap-3 mb-4 flex-wrap flex-md-nowrap" role="alert">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-exclamation-triangle-fill text-warning fs-3"></i>
+                <div>
+                    <h5 class="alert-heading mb-1 fw-bold">Past-Due Appointments Requiring Action</h5>
+                    <p class="mb-0 text-dark">There are <strong><?= $overdueCount ?></strong> past appointments still marked as "Scheduled". Please review and update their status.</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2 align-items-center flex-shrink-0">
+                <a href="<?= BASE_URL ?>appointments/list.php?filter=overdue" class="btn btn-sm btn-outline-dark fw-bold px-3 py-2">
+                    <i class="bi bi-list-check me-1"></i> Resolve Manually
+                </a>
+                <form action="<?= BASE_URL ?>appointments/auto_noshow.php" method="POST" class="m-0" id="bulkNoShowForm">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <button type="submit" class="btn btn-sm btn-danger fw-bold px-3 py-2">
+                        <i class="bi bi-calendar-x me-1"></i> Mark All as No-Show
+                    </button>
+                </form>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- Summary Metrics Cards Grid -->
     <div class="row g-4 mb-4">
@@ -216,6 +250,31 @@ require_once __DIR__ . '/../includes/sidebar.php';
 </main>
 
 
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Intercept bulk resolve (No-Show) form submit with SweetAlert2
+    const bulkForm = document.getElementById('bulkNoShowForm');
+    if (bulkForm) {
+        bulkForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Mark All as No-Show?',
+                text: 'Are you sure you want to mark all past scheduled appointments as No-Show? This will update all overdue records in the system.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#DC3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, mark as No-Show'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    bulkForm.submit();
+                }
+            });
+        });
+    }
+});
+</script>
 
 <?php
 // Load SweetAlert session alerts

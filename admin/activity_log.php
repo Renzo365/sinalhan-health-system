@@ -170,7 +170,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <tbody>
                         <?php foreach ($logs as $l): ?>
                             <tr>
-                                <td>
+                                <td data-order="<?= htmlspecialchars($l['created_at']) ?>">
                                     <span class="text-secondary"><?= date('M d, Y h:i A', strtotime($l['created_at'])) ?></span>
                                 </td>
                                 <td>
