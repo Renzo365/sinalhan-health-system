@@ -16,14 +16,26 @@ const ASSETS_TO_CACHE = [
   'assets/css/dashboard.css',
   'assets/js/main.js',
   'manifest.json',
-  // CDN resources
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css',
-  'https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css',
-  'https://code.jquery.com/jquery-3.6.0.min.js',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
-  'https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js'
+  // Localized vendor stylesheets & scripts (Offline-First compliant)
+  'assets/vendor/bootstrap/css/bootstrap.min.css',
+  'assets/vendor/bootstrap/js/bootstrap.bundle.min.js',
+  'assets/vendor/bootstrap-icons/bootstrap-icons.css',
+  'assets/vendor/bootstrap-icons/fonts/bootstrap-icons.woff2',
+  'assets/vendor/bootstrap-icons/fonts/bootstrap-icons.woff',
+  'assets/vendor/jquery/jquery.min.js',
+  'assets/vendor/sweetalert2/sweetalert2.min.css',
+  'assets/vendor/sweetalert2/sweetalert2.all.min.js',
+  'assets/vendor/chart.js/chart.umd.js',
+  'assets/vendor/qrious/qrious.min.js',
+  'assets/vendor/datatables/css/dataTables.bootstrap5.min.css',
+  'assets/vendor/datatables/js/jquery.dataTables.min.js',
+  'assets/vendor/datatables/js/dataTables.bootstrap5.min.js',
+  // Localized Webfonts
+  'assets/fonts/Inter-Light.woff2',
+  'assets/fonts/Inter-Regular.woff2',
+  'assets/fonts/Inter-Medium.woff2',
+  'assets/fonts/Inter-Bold.woff2',
+  'assets/fonts/Outfit.woff2'
 ];
 
 // Install Event - Pre-cache essential files for offline rendering

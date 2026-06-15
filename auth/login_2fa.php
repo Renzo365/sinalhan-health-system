@@ -21,19 +21,22 @@ if (empty($_SESSION['csrf_token'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2FA Verification - Sinalhan Health Center</title>
     
-    <!-- Google Fonts (Inter) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 
+      Offline-First Localization (Capstone Defense Documentation):
+      External CDN links and hosted Google Fonts have been replaced with local assets (assets/vendor and assets/fonts) 
+      to ensure the portal is fully operational on intranet installations without any active internet connection.
+    -->
+    <!-- Local Inter Web Fonts and Main Stylesheet (Offline-First compliant) -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
     
-    <!-- Bootstrap 5 CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Local Bootstrap 5 CSS -->
+    <link href="<?= BASE_URL ?>assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Bootstrap Icons CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Local Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/vendor/bootstrap-icons/bootstrap-icons.css">
     
-    <!-- SweetAlert2 CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- Local SweetAlert2 CSS -->
+    <link href="<?= BASE_URL ?>assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet">
     
     <!-- Custom Login Stylesheet -->
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/login.css">
@@ -90,8 +93,8 @@ if (empty($_SESSION['csrf_token'])) {
         </div>
     </div>
 
-    <!-- SweetAlert2 JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    <!-- Local SweetAlert2 JS -->
+    <script src="<?= BASE_URL ?>assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
 
     <!-- Session Flash Alerts Rendering -->
     <?php require_once __DIR__ . '/../includes/alert.php'; ?>

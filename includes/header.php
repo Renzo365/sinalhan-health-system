@@ -4,7 +4,7 @@ if (!headers_sent()) {
     header("X-Frame-Options: DENY");
     header("X-Content-Type-Options: nosniff");
     header("Referrer-Policy: strict-origin-when-cross-origin");
-    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.datatables.net https://code.jquery.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.datatables.net https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data:;");
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:;");
 }
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/session.php';
@@ -16,19 +16,20 @@ require_once __DIR__ . '/../config/session.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($page_title) ? $page_title . ' - ' : '' ?><?= APP_NAME ?></title>
     
-    <!-- Google Fonts (Inter) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 
+      Offline-First Localization (Capstone Defense Documentation):
+      All external stylesheet dependencies, hosted fonts, and CDNs are migrated to local paths.
+      The Content Security Policy (CSP) header is locked down to 'self' to enforce local resource execution,
+      improving system load times, preventing layout breaks offline, and hardening overall clinic portal security.
+    -->
+    <!-- Local Bootstrap 5 CSS -->
+    <link href="<?= BASE_URL ?>assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Bootstrap 5 CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Local Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/vendor/bootstrap-icons/bootstrap-icons.css">
     
-    <!-- Bootstrap Icons CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    
-    <!-- SweetAlert2 CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- Local SweetAlert2 CSS -->
+    <link href="<?= BASE_URL ?>assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet">
     
     <!-- Main Custom CSS Stylesheet -->
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">

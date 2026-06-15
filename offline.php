@@ -8,12 +8,17 @@ require_once __DIR__ . '/config/app.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Offline Mode - Sinalhan Health Center</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap 5 CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- 
+      Offline-First Localization (Capstone Defense Documentation):
+      External CDN links and hosted Google Fonts have been replaced with local assets (assets/vendor and assets/fonts) 
+      to ensure the offline warning page renders properly on intranet installations even when disconnected.
+    -->
+    <!-- Local Inter Web Fonts and Main Stylesheet (Offline-First compliant) -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
+    <!-- Local Bootstrap 5 CSS -->
+    <link href="<?= BASE_URL ?>assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Local Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/vendor/bootstrap-icons/bootstrap-icons.css">
     <style>
         :root {
             --primary-color: #0D7377;

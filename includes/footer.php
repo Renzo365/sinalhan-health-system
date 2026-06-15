@@ -9,18 +9,22 @@ require_once __DIR__ . '/../config/app.php';
     </div> <!-- Close #content-wrapper -->
 </div> <!-- Close #wrapper -->
 
-<!-- core JS libraries CDN -->
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- 
+  Offline-First Localization (Capstone Defense Documentation):
+  All core external JS dependencies (jQuery, Bootstrap, SweetAlert2, and Chart.js) are loaded from local assets.
+  This prevents script rendering delays and blocking errors when the health clinic system is run in offline/intranet environments.
+-->
+<!-- Local jQuery -->
+<script src="<?= BASE_URL ?>assets/vendor/jquery/jquery.min.js"></script>
 
-<!-- Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Local Bootstrap Bundle with Popper -->
+<script src="<?= BASE_URL ?>assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+<!-- Local SweetAlert2 -->
+<script src="<?= BASE_URL ?>assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
 
-<!-- Chart.js (Loaded only when needed or globally for capstone dashboard ease) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Local Chart.js -->
+<script src="<?= BASE_URL ?>assets/vendor/chart.js/chart.umd.js"></script>
 
 <!-- Layout Main JS file -->
 <script src="<?= BASE_URL ?>assets/js/main.js"></script>

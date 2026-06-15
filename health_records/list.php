@@ -10,11 +10,11 @@ require_role(['admin', 'staff']);
 $page_title = 'Health Records';
 $active_menu = 'health_records';
 
-// Load DataTables styles and scripts via CDN
-$extra_css = ['https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css'];
+// Load local DataTables styles and scripts (Offline-First compliant: prevents CDN blocking errors when clinic internet is offline)
+$extra_css = ['assets/vendor/datatables/css/dataTables.bootstrap5.min.css'];
 $extra_js = [
-    'https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js',
-    'https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js'
+    'assets/vendor/datatables/js/jquery.dataTables.min.js',
+    'assets/vendor/datatables/js/dataTables.bootstrap5.min.js'
 ];
 
 require_once __DIR__ . '/../config/database.php';

@@ -13,13 +13,24 @@ require_role(['admin', 'staff', 'bhw']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Public Queue Monitor - Sinalhan Health Center</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- 
+      Offline-First Localization (Capstone Defense Documentation):
+      External Google Fonts and CDN dependencies are replaced with locally-served alternatives 
+      to ensure the public queue monitor functions properly on intranet installations without internet access.
+    -->
+    <!-- Local Bootstrap 5 CSS -->
+    <link href="<?= BASE_URL ?>assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Local Bootstrap Icons CSS -->
+    <link href="<?= BASE_URL ?>assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <style>
+        /* Local Outfit Webfont Integration for offline rendering consistency */
+        @font-face {
+            font-family: 'Outfit';
+            font-style: normal;
+            font-weight: 300 800; /* Supports weights 300, 400, 600, 800 as variable font */
+            font-display: swap;
+            src: url('<?= BASE_URL ?>assets/fonts/Outfit.woff2') format('woff2');
+        }
         :root {
             --bg-gradient: linear-gradient(135deg, #072227 0%, #06101e 100%);
             --primary-color: #0D7377;
@@ -370,8 +381,8 @@ require_role(['admin', 'staff', 'bhw']);
 
     </div>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Local jQuery (Offline-First compliance: prevents script execution blockage when offline) -->
+    <script src="<?= BASE_URL ?>assets/vendor/jquery/jquery.min.js"></script>
     <script>
         let lastAnnouncedNumber = null;
         let audioUnlocked = false;

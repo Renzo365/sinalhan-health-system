@@ -10,14 +10,14 @@ require_role(['admin', 'staff', 'bhw']);
 $page_title = 'Appointments Directory';
 $active_menu = 'appointments';
 
-// Load DataTables styles and scripts via CDN
+// Load local DataTables styles and scripts (Offline-First compliant: prevents CDN blocking errors when clinic internet is offline)
 $extra_css = [
-    'https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css',
+    'assets/vendor/datatables/css/dataTables.bootstrap5.min.css',
     'assets/css/dashboard.css'
 ];
 $extra_js = [
-    'https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js',
-    'https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js'
+    'assets/vendor/datatables/js/jquery.dataTables.min.js',
+    'assets/vendor/datatables/js/dataTables.bootstrap5.min.js'
 ];
 
 require_once __DIR__ . '/../config/database.php';

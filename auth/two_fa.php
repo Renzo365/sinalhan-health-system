@@ -38,7 +38,7 @@ try {
     
     $secret = $is2faEnabled ? $user['two_fa_secret'] : $_SESSION['temp_2fa_secret'];
     $qrData = TOTP::getQRUrl($user['username'], $secret);
-    $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($qrData);
+    // $qrUrl is deprecated. QR Code is now generated client-side using local qrious.min.js library for Offline-First compliance.
 
 } catch (Exception $e) {
     error_log("2FA settings load failed: " . $e->getMessage());
@@ -92,8 +92,25 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <div class="col-md-5 text-center border-end">
                                 <h5 class="fw-bold mb-3 text-secondary">Step 1: Scan QR Code</h5>
                                 <div class="bg-white p-3 d-inline-block rounded-3 border mb-2">
-                                    <img src="<?= $qrUrl ?>" alt="2FA QR Code" class="img-fluid" style="width: 200px; height: 200px;">
+                                    <canvas id="qr-canvas" class="img-fluid" style="width: 200px; height: 200px;"></canvas>
                                 </div>
+                                <!-- 
+                                  Offline-First QR Code Generation (Capstone Defense Documentation):
+                                  Previously, QR codes were drawn using the external api.qrserver.com HTTP service.
+                                  To prevent dependency on an internet connection and protect clinic security,
+                                  we migrated to a fully localized setup using QRious.js to render the QR code 
+                                  entirely client-side on an HTML5 canvas element.
+                                -->
+                                <script src="<?= BASE_URL ?>assets/vendor/qrious/qrious.min.js"></script>
+                                <script>
+                                    (function() {
+                                        new QRious({
+                                            element: document.getElementById('qr-canvas'),
+                                            value: '<?= $qrData ?>',
+                                            size: 200
+                                        });
+                                    })();
+                                </script>
                                 <div class="mt-2">
                                     <small class="text-secondary d-block">Or enter secret key manually:</small>
                                     <code class="fw-bold fs-6 text-teal" style="letter-spacing: 1px;"><?= chunk_split($secret, 4, ' ') ?></code>
