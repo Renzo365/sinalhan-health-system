@@ -57,23 +57,32 @@ try {
         }
 
         $file = $_FILES['clinic_logo'];
-        $allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-        if (!in_array($file['type'], $allowedTypes)) {
-            throw new Exception("Invalid file type. Only PNG and JPEG/JPG are allowed.");
+        
+        // 1. Verify file content MIME type on the server (mitigates Content-Type header spoofing)
+        $detectedMime = mime_content_type($file['tmp_name']);
+        $allowedMimes = ['image/png', 'image/jpeg', 'image/jpg'];
+        if (!in_array($detectedMime, $allowedMimes)) {
+            throw new Exception("Invalid file content. Only real PNG and JPEG/JPG images are allowed.");
         }
 
-        // Limit size to 2MB
+        // 2. Limit size to 2MB
         if ($file['size'] > 2 * 1024 * 1024) {
             throw new Exception("File is too large. Maximum size is 2MB.");
         }
 
-        // Create images folder if not exists
+        // 3. Create images folder if not exists
         $targetDir = __DIR__ . '/../assets/images';
         if (!file_exists($targetDir)) {
             mkdir($targetDir, 0755, true);
         }
 
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        // 4. Validate file extension strictly against whitelist
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowedExtensions = ['png', 'jpg', 'jpeg'];
+        if (!in_array($ext, $allowedExtensions)) {
+            throw new Exception("Invalid file extension. Only .png, .jpg, and .jpeg files are allowed.");
+        }
+
         $fileName = 'clinic_logo_' . time() . '.' . $ext;
         $targetPath = $targetDir . '/' . $fileName;
 

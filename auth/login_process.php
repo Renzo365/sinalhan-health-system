@@ -40,6 +40,32 @@ try {
 
     // 3. Query User from Database
     $pdo = Database::getInstance()->getConnection();
+
+    // Auto-create login_attempts table if it does not exist (Defensive database upgrade)
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS login_attempts (
+            ip_address VARCHAR(45) NOT NULL,
+            username VARCHAR(100) NOT NULL,
+            attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            KEY idx_ip_username (ip_address, username),
+            KEY idx_attempted_at (attempted_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    ");
+
+    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+    // Check rate limit: max 5 failed attempts in last 15 minutes
+    $rateLimitStmt = $pdo->prepare("
+        SELECT COUNT(*) FROM login_attempts 
+        WHERE ip_address = ? AND username = ? AND attempted_at > NOW() - INTERVAL 15 MINUTE
+    ");
+    $rateLimitStmt->execute([$ipAddress, $username]);
+    $failedAttempts = (int)$rateLimitStmt->fetchColumn();
+
+    if ($failedAttempts >= 5) {
+        throw new Exception('Too many failed login attempts. Your account/IP is temporarily locked. Please try again after 15 minutes.');
+    }
+
     $stmt = $pdo->prepare("
         SELECT user_id, username, password_hash, first_name, last_name, role, is_active, is_archived, two_fa_enabled, two_fa_secret, theme, font_size 
         FROM users 
@@ -90,6 +116,10 @@ try {
             exit;
         }
 
+        // Clear failed login attempts on successful login
+        $clearAttemptsStmt = $pdo->prepare("DELETE FROM login_attempts WHERE ip_address = ? AND username = ?");
+        $clearAttemptsStmt->execute([$ipAddress, $username]);
+
         // 6. Successful Login: Set session and regenerate ID (prevents session fixation)
         session_regenerate_id(true);
 
@@ -124,6 +154,10 @@ try {
         exit;
 
     } else {
+        // Log failed login attempt
+        $logAttemptStmt = $pdo->prepare("INSERT INTO login_attempts (ip_address, username) VALUES (?, ?)");
+        $logAttemptStmt->execute([$ipAddress, $username]);
+
         // Invalid credentials
         $_SESSION['alert'] = [
             'type' => 'error',
@@ -138,8 +172,8 @@ try {
     error_log("Login processing exception: " . $e->getMessage());
     $_SESSION['alert'] = [
         'type' => 'error',
-        'title' => 'System Error',
-        'message' => 'An error occurred during authentication. Please try again.'
+        'title' => 'Authentication Error',
+        'message' => $e->getMessage()
     ];
     header('Location: ' . BASE_URL . 'auth/login.php');
     exit;

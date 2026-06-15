@@ -22,7 +22,11 @@ if (php_sapi_name() !== 'cli') {
     // 3. Restrict session cookies to SameSite 'Strict' (prevents cross-site request forgery attacks)
     ini_set('session.cookie_samesite', 'Strict'); 
     
-    // 4. Set maximum session lifetime on the server to 30 minutes (1800 seconds)
+    // 4. Force session cookies over HTTPS dynamically (mitigates man-in-the-middle session theft)
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] ?? 80) == 443;
+    ini_set('session.cookie_secure', $isSecure ? 1 : 0);
+    
+    // 5. Set maximum session lifetime on the server to 30 minutes (1800 seconds)
     ini_set('session.gc_maxlifetime', 1800);   
 
     // Initialize session if not already started by another page/file

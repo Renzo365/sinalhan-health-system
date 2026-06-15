@@ -1,5 +1,11 @@
 <?php
 // includes/header.php
+if (!headers_sent()) {
+    header("X-Frame-Options: DENY");
+    header("X-Content-Type-Options: nosniff");
+    header("Referrer-Policy: strict-origin-when-cross-origin");
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.datatables.net https://code.jquery.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.datatables.net https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data:;");
+}
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/session.php';
 ?>

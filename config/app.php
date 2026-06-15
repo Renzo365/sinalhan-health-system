@@ -1,5 +1,7 @@
 <?php
 // config/app.php
+require_once __DIR__ . '/env.php';
+
 
 /**
  * App Configuration Settings
@@ -87,6 +89,6 @@ if (!function_exists('e')) {
  * Must be a cryptographically secure 32-byte string.
  * This key is utilized by the OpenSSL AES-256-CBC engine to encrypt sensitive patient records.
  */
-define('ENCRYPTION_KEY', 'SinalhanHealthCenterDataKey2026_Secure32Bytes!');
+define('ENCRYPTION_KEY', getenv('ENCRYPTION_KEY') ?: 'default_sinalhan_health_center_key_32_bytes_long_123');
 
 

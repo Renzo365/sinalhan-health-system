@@ -30,6 +30,9 @@ $filterServiceId = $_GET['service_id'] ?? '';
 $filterDate = $_GET['appointment_date'] ?? '';
 $filterStatus = $_GET['status'] ?? '';
 
+$serviceList = [];
+$todayStr = date('Y-m-d');
+
 try {
     // Fetch active service types for filter dropdown
     $servicesStmt = $pdo->query("SELECT service_id, service_name FROM service_types WHERE is_active = 1 ORDER BY service_name ASC");
@@ -321,6 +324,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         }
         .metric-card.cancelled-card::before {
             background-color: var(--danger-color, #dc3545);
+        }
         .dot-status-marker {
             width: 8px;
             height: 8px;
@@ -1042,9 +1046,6 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedDateStr = "";
         renderCalendar();
         renderUpcomingTimeline();
-        if (searchNameInput) {
-            searchNameInput.value = "";
-        }
         if (appointmentsTable) {
             appointmentsTable.search('').draw();
         }
@@ -1127,9 +1128,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (appointmentsTable) {
                 appointmentsTable.search('Overdue').draw();
             }
-            if (searchNameInput) {
-                searchNameInput.value = 'Overdue';
-            }
         });
     }
 
@@ -1138,9 +1136,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (urlParams.get('filter') === 'overdue') {
         if (appointmentsTable) {
             appointmentsTable.search('Overdue').draw();
-        }
-        if (searchNameInput) {
-            searchNameInput.value = 'Overdue';
         }
     }
 

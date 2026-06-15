@@ -23,13 +23,13 @@ class Database {
     private $password = '';
     private $charset = 'utf8mb4';
 
-    /**
-     * Private Constructor
-     * 
-     * Restricting constructor access prevents direct instantiation (using 'new Database()')
-     * from outside classes, enforcing the singleton structure.
-     */
     private function __construct() {
+        // Load database connection settings dynamically from environment variables
+        $this->host = getenv('DB_HOST') ?: 'localhost';
+        $this->dbname = getenv('DB_NAME') ?: 'bhc_sinalhan_db';
+        $this->username = getenv('DB_USER') ?: 'root';
+        $this->password = getenv('DB_PASS') !== false ? getenv('DB_PASS') : '';
+
         try {
             // Data Source Name (DSN) defines database type, host, name, and charset
             $dsn = "mysql:host={$this->host};dbname={$this->dbname};charset={$this->charset}";
