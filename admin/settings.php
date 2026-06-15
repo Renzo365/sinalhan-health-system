@@ -303,7 +303,10 @@ if ($isAdmin) {
                             </h4>
                             <p class="text-secondary small">Create a downloadable copy of the health center database. Export includes all users, patient details, and encrypted medical records.</p>
                             <div class="mb-5 text-start">
-                                <a href="<?= BASE_URL ?>admin/backup_process.php" class="btn btn-success px-4"><i class="bi bi-download me-1"></i> Download SQL Backup File</a>
+                                <form action="<?= BASE_URL ?>admin/backup_process.php" method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                    <button type="submit" class="btn btn-success px-4"><i class="bi bi-download me-1"></i> Download SQL Backup File</button>
+                                </form>
                             </div>
 
                             <h4 class="card-custom-title mb-4 border-bottom pb-2 mt-4">

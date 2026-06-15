@@ -227,21 +227,37 @@ try {
             $recUpdate->execute([$chiefEnc, $diagEnc, $treatEnc, $prescEnc, $notesEnc, $r['record_id']]);
         }
 
-        // 3. Update the config/app.php file with the new key definition
+        // 3. Update the .env file with the new key definition
+        $envPath = __DIR__ . '/../.env';
+        if (file_exists($envPath)) {
+            $envContent = file_get_contents($envPath);
+            $envPattern = "/ENCRYPTION_KEY\s*=\s*.*/";
+            $envReplacement = "ENCRYPTION_KEY=" . $newKey;
+            if (preg_match($envPattern, $envContent)) {
+                $newEnvContent = preg_replace($envPattern, $envReplacement, $envContent);
+            } else {
+                $newEnvContent = rtrim($envContent) . "\nENCRYPTION_KEY=" . $newKey . "\n";
+            }
+            if (file_put_contents($envPath, $newEnvContent) === false) {
+                throw new Exception("Failed to write rotated encryption key to .env file.");
+            }
+        }
+
+        // 4. Update the config/app.php fallback key definition (for case-insensitive regex fallback safety)
         $appPath = __DIR__ . '/../config/app.php';
         if (!file_exists($appPath)) {
             throw new Exception("App configuration file config/app.php not found.");
         }
-        $content = file_get_contents($appPath);
-        $pattern = "/define\(\s*'ENCRYPTION_KEY'\s*,\s*'.*?'\s*\);/";
-        $replacement = "define('ENCRYPTION_KEY', '" . addslashes($newKey) . "');";
-        $newContent = preg_replace($pattern, $replacement, $content);
+        $appContent = file_get_contents($appPath);
+        $appPattern = "/define\(\s*'ENCRYPTION_KEY'\s*,\s*getenv\('ENCRYPTION_KEY'\)\s*\?:\s*'.*?'\s*\);/";
+        $appReplacement = "define('ENCRYPTION_KEY', getenv('ENCRYPTION_KEY') ?: '" . addslashes($newKey) . "');";
+        $newAppContent = preg_replace($appPattern, $appReplacement, $appContent);
         
-        if ($newContent === null) {
+        if ($newAppContent === null) {
             throw new Exception("Regex match error while updating config/app.php.");
         }
 
-        if (file_put_contents($appPath, $newContent) === false) {
+        if (file_put_contents($appPath, $newAppContent) === false) {
             throw new Exception("Failed to write to config/app.php. Check folder permissions.");
         }
 

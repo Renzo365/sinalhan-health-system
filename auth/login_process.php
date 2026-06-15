@@ -54,6 +54,9 @@ try {
 
     $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
+    // Prune attempts older than 24 hours to prevent table bloat
+    $pdo->exec("DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL 1 DAY");
+
     // Check rate limit: max 5 failed attempts in last 15 minutes
     $rateLimitStmt = $pdo->prepare("
         SELECT COUNT(*) FROM login_attempts 

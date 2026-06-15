@@ -31,8 +31,8 @@ if (!defined('BASE_URL')) {
         $docRoot = str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']);
         // Get application base root directory path
         $appDir = str_replace('\\', '/', dirname(__DIR__));
-        // Calculate the difference/relative folder structure
-        $relative = str_replace($docRoot, '', $appDir);
+        // Calculate the difference/relative folder structure (case-insensitive for Windows compatibility)
+        $relative = preg_replace('/^' . preg_quote($docRoot, '/') . '/i', '', $appDir);
         // Build base URL string
         $base = '/' . trim($relative, '/') . '/';
         // Fallback to absolute root if blank

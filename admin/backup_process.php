@@ -8,6 +8,27 @@ require_once __DIR__ . '/../includes/log_activity.php';
 
 require_role(['admin']);
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Security Violation',
+        'message' => 'Direct access to backup download is not permitted.'
+    ];
+    header('Location: ' . BASE_URL . 'admin/settings.php');
+    exit;
+}
+
+$csrfToken = $_POST['csrf_token'] ?? '';
+if (empty($csrfToken) || !isset($_SESSION['csrf_token']) || $csrfToken !== $_SESSION['csrf_token']) {
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Security Error',
+        'message' => 'CSRF verification failed.'
+    ];
+    header('Location: ' . BASE_URL . 'admin/settings.php');
+    exit;
+}
+
 try {
     $pdo = Database::getInstance()->getConnection();
     

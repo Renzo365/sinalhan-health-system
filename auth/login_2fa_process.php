@@ -25,12 +25,13 @@ try {
     }
 
     // Verify temp session exists
-    if (!isset($_SESSION['temp_2fa_user_id'])) {
+    if (!isset($_SESSION['temp_2fa_user_id']) || !isset($_SESSION['temp_2fa_username'])) {
         header('Location: ' . BASE_URL . 'auth/login.php');
         if (!defined('TESTING')) exit;
     }
 
     $userId = (int)$_SESSION['temp_2fa_user_id'];
+    $username = $_SESSION['temp_2fa_username'];
     $code = trim($_POST['code'] ?? '');
 
     if (empty($code)) {
@@ -43,8 +44,25 @@ try {
         if (!defined('TESTING')) exit;
     }
 
-    // 2. Fetch User Secret from DB
     $pdo = Database::getInstance()->getConnection();
+    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+    // Prune attempts older than 24 hours to prevent table bloat
+    $pdo->exec("DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL 1 DAY");
+
+    // Check rate limit: max 5 failed attempts in last 15 minutes
+    $rateLimitStmt = $pdo->prepare("
+        SELECT COUNT(*) FROM login_attempts 
+        WHERE ip_address = ? AND username = ? AND attempted_at > NOW() - INTERVAL 15 MINUTE
+    ");
+    $rateLimitStmt->execute([$ipAddress, $username]);
+    $failedAttempts = (int)$rateLimitStmt->fetchColumn();
+
+    if ($failedAttempts >= 5) {
+        throw new Exception('Too many failed login/2FA attempts. Account locked. Try again after 15 minutes.');
+    }
+
+    // 2. Fetch User Secret from DB
     $stmt = $pdo->prepare("SELECT two_fa_secret, two_fa_enabled FROM users WHERE user_id = ? AND is_active = 1");
     $stmt->execute([$userId]);
     $user = $stmt->fetch();
@@ -55,6 +73,10 @@ try {
 
     // 3. Verify TOTP Code
     if (TOTP::verifyCode($user['two_fa_secret'], $code)) {
+        // Success: Clear failed attempts on successful login
+        $clearAttemptsStmt = $pdo->prepare("DELETE FROM login_attempts WHERE ip_address = ? AND username = ?");
+        $clearAttemptsStmt->execute([$ipAddress, $username]);
+
         // Success: Promote session variables to full login status
         session_regenerate_id(true);
 
@@ -76,13 +98,13 @@ try {
 
         // Update database log
         $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW(), last_login_ip = ? WHERE user_id = ?");
-        $updateStmt->execute([$_SERVER['REMOTE_ADDR'] ?? '127.0.0.1', $userId]);
+        $updateStmt->execute([$ipAddress, $userId]);
 
-        log_activity($pdo, 'Logged in (2FA Verified)', 'Auth', $userId, 'IP: ' . ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'));
+        log_activity($pdo, 'Logged in (2FA Verified)', 'Auth', $userId, 'IP: ' . $ipAddress);
 
         $_SESSION['alert'] = [
             'type' => 'success',
-            'title' => 'Authentication Verified',
+            'title' => 'Welcome Back!',
             'message' => 'Two-factor code verified successfully.'
         ];
 
@@ -90,6 +112,10 @@ try {
         if (!defined('TESTING')) exit;
 
     } else {
+        // Log failed 2FA verification attempt
+        $logAttemptStmt = $pdo->prepare("INSERT INTO login_attempts (ip_address, username) VALUES (?, ?)");
+        $logAttemptStmt->execute([$ipAddress, $username]);
+
         // Verification failed
         $_SESSION['alert'] = [
             'type' => 'error',
