@@ -408,21 +408,14 @@ function syncOfflineData() {
 
 function uploadBatch(records, index) {
     if (index >= records.length) {
-        // Complete! Clear IndexedDB
-        const clearTransaction = db.transaction([STORE_NAME], 'readwrite');
-        const clearStore = clearTransaction.objectStore(STORE_NAME);
-        const clearRequest = clearStore.clear();
-
-        clearRequest.onsuccess = function() {
-            Swal.fire({
-                icon: 'success',
-                title: 'Sync Successful!',
-                text: `Successfully uploaded ${records.length} patient record(s) to the central database.`,
-                confirmButtonColor: '#0D7377'
-            }).then(() => {
-                updatePendingBadge();
-            });
-        };
+        Swal.fire({
+            icon: 'success',
+            title: 'Sync Successful!',
+            text: `Successfully uploaded all ${records.length} patient record(s) to the central database.`,
+            confirmButtonColor: '#0D7377'
+        }).then(() => {
+            updatePendingBadge();
+        });
         return;
     }
 
@@ -450,16 +443,43 @@ function uploadBatch(records, index) {
             offline_sync: 1 // Flag specifying sync upload
         },
         success: function(response) {
-            // Proceed to next item in batch
-            uploadBatch(records, index + 1);
+            if (response && response.success === true) {
+                // Delete current record from IndexedDB since it succeeded
+                const deleteTx = db.transaction([STORE_NAME], 'readwrite');
+                const deleteStore = deleteTx.objectStore(STORE_NAME);
+                const deleteReq = deleteStore.delete(rec.id);
+                
+                deleteReq.onsuccess = function() {
+                    // Proceed to next item in batch
+                    uploadBatch(records, index + 1);
+                };
+                deleteReq.onerror = function() {
+                    console.error("Failed to delete synced record from IndexedDB:", rec.id);
+                    uploadBatch(records, index + 1);
+                };
+            } else {
+                // Server-side validation failed (e.g. duplicate patient check)
+                const errMsg = response && response.message ? response.message : 'Unknown validation error';
+                console.error(`Sync error on record index ${index}:`, errMsg);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sync Paused',
+                    text: `Validation failed for ${rec.first_name} ${rec.last_name}: ${errMsg}`,
+                    confirmButtonColor: '#e74c3c'
+                }).then(() => {
+                    updatePendingBadge();
+                });
+            }
         },
         error: function(xhr, status, error) {
             console.error(`Sync error on record index ${index}:`, error);
             Swal.fire({
                 icon: 'error',
                 title: 'Sync Interrupted',
-                text: `Failed to sync record for ${rec.first_name} ${rec.last_name}. Error: ${error}. Sync paused.`,
+                text: `Failed to sync record for ${rec.first_name} ${rec.last_name}. Error: ${error || status}. Sync paused.`,
                 confirmButtonColor: '#e74c3c'
+            }).then(() => {
+                updatePendingBadge();
             });
         }
     });

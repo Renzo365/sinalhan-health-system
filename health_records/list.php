@@ -126,17 +126,48 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     </select>
                 </div>
                 <div class="col-md-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-teal w-100 py-2 d-flex align-items-center justify-content-center gap-2">
-                        <i class="bi bi-filter"></i>
-                        <span>Apply</span>
+                    <button type="submit" class="btn btn-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-funnel-fill"></i>
+                        <span>Filter</span>
                     </button>
-                    <?php if (!empty($startDate) || !empty($endDate) || !empty($serviceFilterId)): ?>
-                        <a href="<?= BASE_URL ?>health_records/list.php" class="btn btn-outline-secondary py-2" title="Clear Filters">
-                            <i class="bi bi-x-circle"></i>
-                        </a>
-                    <?php endif; ?>
+                    <a href="<?= BASE_URL ?>health_records/list.php" class="btn btn-outline-secondary w-100 py-2 d-flex align-items-center justify-content-center gap-2" title="Clear Filters">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Clear</span>
+                    </a>
                 </div>
             </form>
+
+            <?php if (!empty($startDate) || !empty($endDate) || !empty($serviceFilterId)): ?>
+                <div class="d-flex flex-wrap gap-2 align-items-center mt-3 pt-3 border-top">
+                    <span class="text-secondary small fw-bold me-2">Active Filters:</span>
+                    <?php if (!empty($startDate)): ?>
+                        <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                            From: <?= htmlspecialchars($startDate) ?> 
+                            <a href="?<?= http_build_query(array_merge($_GET, ['start_date' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                        </span>
+                    <?php endif; ?>
+                    <?php if (!empty($endDate)): ?>
+                        <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                            To: <?= htmlspecialchars($endDate) ?> 
+                            <a href="?<?= http_build_query(array_merge($_GET, ['end_date' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                        </span>
+                    <?php endif; ?>
+                    <?php if (!empty($serviceFilterId)): 
+                        $serviceName = '';
+                        foreach ($serviceList as $s) {
+                            if ($s['service_id'] == $serviceFilterId) {
+                                $serviceName = $s['service_name'];
+                                break;
+                            }
+                        }
+                    ?>
+                        <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                            Service: <?= htmlspecialchars($serviceName) ?> 
+                            <a href="?<?= http_build_query(array_merge($_GET, ['service_id' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                        </span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 

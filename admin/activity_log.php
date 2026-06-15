@@ -89,14 +89,11 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
     <!-- Filter Card -->
     <div class="card-custom mb-4">
-        <div class="card-custom-header">
-            <h3 class="card-custom-title"><i class="bi bi-filter"></i> Filter Audit Trails</h3>
-        </div>
-        <div class="card-custom-body py-3">
+        <div class="card-custom-body p-3">
             <form method="GET" action="<?= BASE_URL ?>admin/activity_log.php" class="row g-3 align-items-end">
                 <!-- User filter -->
                 <div class="col-md-3">
-                    <label for="user_id" class="form-label font-weight-bold mb-1">User Account</label>
+                    <label for="user_id" class="form-label font-weight-bold mb-1 small text-secondary">User Account</label>
                     <select name="user_id" id="user_id" class="form-select">
                         <option value="">-- All Users --</option>
                         <?php foreach ($usersDropdown as $u): ?>
@@ -109,7 +106,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
                 <!-- Module filter -->
                 <div class="col-md-3">
-                    <label for="module" class="form-label font-weight-bold mb-1">System Module</label>
+                    <label for="module" class="form-label font-weight-bold mb-1 small text-secondary">System Module</label>
                     <select name="module" id="module" class="form-select">
                         <option value="">-- All Modules --</option>
                         <option value="Patient Records" <?= $filterModule === 'Patient Records' ? 'selected' : '' ?>>Patient Records</option>
@@ -124,26 +121,66 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
                 <!-- Date from filter -->
                 <div class="col-md-2">
-                    <label for="date_from" class="form-label font-weight-bold mb-1">Date From</label>
+                    <label for="date_from" class="form-label font-weight-bold mb-1 small text-secondary">Date From</label>
                     <input type="date" name="date_from" id="date_from" class="form-control" value="<?= htmlspecialchars($filterDateFrom) ?>">
                 </div>
 
                 <!-- Date to filter -->
                 <div class="col-md-2">
-                    <label for="date_to" class="form-label font-weight-bold mb-1">Date To</label>
+                    <label for="date_to" class="form-label font-weight-bold mb-1 small text-secondary">Date To</label>
                     <input type="date" name="date_to" id="date_to" class="form-control" value="<?= htmlspecialchars($filterDateTo) ?>">
                 </div>
 
                 <!-- Action buttons -->
                 <div class="col-md-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-100 py-2">
-                        <i class="bi bi-search"></i> Filter
+                    <button type="submit" class="btn btn-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-funnel-fill"></i>
+                        <span>Filter</span>
                     </button>
-                    <a href="<?= BASE_URL ?>admin/activity_log.php" class="btn btn-outline-secondary w-100 py-2 text-center" title="Reset Filters">
-                        Clear
+                    <a href="<?= BASE_URL ?>admin/activity_log.php" class="btn btn-outline-secondary w-100 py-2 d-flex align-items-center justify-content-center gap-2" title="Clear Filters">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Clear</span>
                     </a>
                 </div>
             </form>
+
+            <?php if (!empty($filterUser) || !empty($filterModule) || !empty($filterDateFrom) || !empty($filterDateTo)): ?>
+                <div class="d-flex flex-wrap gap-2 align-items-center mt-3 pt-3 border-top">
+                    <span class="text-secondary small fw-bold me-2">Active Filters:</span>
+                    <?php if (!empty($filterUser)): 
+                        $usernameVal = '';
+                        foreach ($usersDropdown as $u) {
+                            if ($u['user_id'] == $filterUser) {
+                                $usernameVal = $u['username'];
+                                break;
+                            }
+                        }
+                    ?>
+                        <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                            User: @<?= htmlspecialchars($usernameVal) ?> 
+                            <a href="?<?= http_build_query(array_merge($_GET, ['user_id' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                        </span>
+                    <?php endif; ?>
+                    <?php if (!empty($filterModule)): ?>
+                        <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                            Module: <?= htmlspecialchars($filterModule) ?> 
+                            <a href="?<?= http_build_query(array_merge($_GET, ['module' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                        </span>
+                    <?php endif; ?>
+                    <?php if (!empty($filterDateFrom)): ?>
+                        <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                            From: <?= htmlspecialchars($filterDateFrom) ?> 
+                            <a href="?<?= http_build_query(array_merge($_GET, ['date_from' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                        </span>
+                    <?php endif; ?>
+                    <?php if (!empty($filterDateTo)): ?>
+                        <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                            To: <?= htmlspecialchars($filterDateTo) ?> 
+                            <a href="?<?= http_build_query(array_merge($_GET, ['date_to' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                        </span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 

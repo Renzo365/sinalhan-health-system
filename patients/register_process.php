@@ -45,6 +45,7 @@ try {
     $emergencyNumber = trim($_POST['emergency_contact_number'] ?? '') ?: null;
     $medicalHistory = trim($_POST['medical_history'] ?? '') ?: null;
     $allergies = trim($_POST['allergies'] ?? '') ?: null;
+    $allowDuplicate = $_POST['allow_duplicate'] ?? '0';
 
     if ($medicalHistory) {
         $medicalHistory = encrypt_data($medicalHistory);
@@ -80,6 +81,22 @@ try {
 
     // 4. Save Patient to Database
     $pdo = Database::getInstance()->getConnection();
+
+    // Check for exact duplicate if override flag is not set
+    if ($allowDuplicate !== '1') {
+        $checkStmt = $pdo->prepare("
+            SELECT COUNT(*) FROM patients 
+            WHERE LOWER(first_name) = LOWER(?) 
+              AND LOWER(last_name) = LOWER(?) 
+              AND birthdate = ? 
+              AND is_archived = 0
+        ");
+        $checkStmt->execute([$firstName, $lastName, $birthdate]);
+        if ((int)$checkStmt->fetchColumn() > 0) {
+            throw new Exception("A patient named '{$firstName} {$lastName}' born on {$birthdate} is already registered.");
+        }
+    }
+
     $insertStmt = $pdo->prepare("
         INSERT INTO patients (
             first_name, middle_name, last_name, suffix, birthdate, sex, civil_status, 

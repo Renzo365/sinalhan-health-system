@@ -306,6 +306,47 @@ if ($isAdmin) {
                                 <a href="<?= BASE_URL ?>admin/backup_process.php" class="btn btn-success px-4"><i class="bi bi-download me-1"></i> Download SQL Backup File</a>
                             </div>
 
+                            <h4 class="card-custom-title mb-4 border-bottom pb-2 mt-4">
+                                <i class="bi bi-database-fill-up text-primary"></i> Restore System Data
+                            </h4>
+                            <p class="text-secondary small mb-3">For safety and compliance, database restorations are performed using offline server utilities. Choose a secure method below:</p>
+                            
+                            <div class="row g-3 mb-5">
+                                <!-- Option 1: CLI Batch script -->
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light border rounded-3 h-100">
+                                        <h5 class="fs-6 fw-bold mb-2 text-dark d-flex align-items-center gap-2">
+                                            <i class="bi bi-terminal text-primary"></i>
+                                            <span>Method A: Command-Line Utility</span>
+                                        </h5>
+                                        <p class="text-muted small mb-3">Run our local batch script utility to safely import large backup files without browser timeout limits.</p>
+                                        <div class="alert alert-info py-2 px-3 small mb-3 border-0">
+                                            <i class="bi bi-info-circle-fill me-1"></i> File: <strong>restore_db.bat</strong> in root folder.
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary px-3" onclick="showCLIPrompt()">
+                                            <i class="bi bi-eye-fill me-1"></i> View Steps
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Option 2: phpMyAdmin -->
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light border rounded-3 h-100">
+                                        <h5 class="fs-6 fw-bold mb-2 text-dark d-flex align-items-center gap-2">
+                                            <i class="bi bi-browser-safari text-primary"></i>
+                                            <span>Method B: phpMyAdmin Console</span>
+                                        </h5>
+                                        <p class="text-muted small mb-3">Import the backup directly through your local phpMyAdmin management dashboard in XAMPP.</p>
+                                        <div class="alert alert-info py-2 px-3 small mb-3 border-0">
+                                            <i class="bi bi-info-circle-fill me-1"></i> Link: <a href="http://localhost/phpmyadmin" target="_blank" class="fw-semibold">http://localhost/phpmyadmin</a>.
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary px-3" onclick="showphpMyAdminPrompt()">
+                                            <i class="bi bi-eye-fill me-1"></i> View Steps
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <h4 class="card-custom-title mb-4 border-bottom pb-2 text-danger">
                                 <i class="bi bi-trash3 text-danger"></i> Prune Old Activity Audit Logs
                             </h4>
@@ -750,6 +791,53 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load list on start
     loadIndexedDBOfflineList();
 });
+
+window.showCLIPrompt = function() {
+    Swal.fire({
+        title: 'Restore via Command-Line Utility',
+        html: `
+            <div class="text-start small">
+                <p>This method runs directly on your local system to avoid browser execution timeouts. Follow these steps:</p>
+                <ol class="ps-3">
+                    <li class="mb-2">Locate the script file <strong>restore_db.bat</strong> in the root folder of your project installation (e.g. <code>C:\\xampp\\htdocs\\sinalhan-health-system\\restore_db.bat</code>).</li>
+                    <li class="mb-2"><strong>Double-click</strong> to execute the batch file. A command window will open.</li>
+                    <li class="mb-2">Type in your MySQL username (usually <code>root</code>) and password when prompted.</li>
+                    <li class="mb-2"><strong>Drag and drop</strong> your downloaded SQL backup file into the window, then press <strong>Enter</strong>.</li>
+                </ol>
+                <div class="alert alert-warning py-2 px-3 border-0 small mt-2">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Warning: This will overwrite all tables in the current active database.
+                </div>
+            </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Understood',
+        confirmButtonColor: '#0D7377'
+    });
+};
+
+window.showphpMyAdminPrompt = function() {
+    Swal.fire({
+        title: 'Restore via phpMyAdmin Dashboard',
+        html: `
+            <div class="text-start small">
+                <p>Follow these steps to import your backup directly inside your local XAMPP dashboard:</p>
+                <ol class="ps-3">
+                    <li class="mb-2">Open your web browser and navigate to <a href="http://localhost/phpmyadmin" target="_blank" class="fw-semibold">http://localhost/phpmyadmin</a>.</li>
+                    <li class="mb-2">From the left sidebar, click on the database named <strong>bhc_sinalhan_db</strong>.</li>
+                    <li class="mb-2">Click on the <strong>Import</strong> tab located in the top menu bar.</li>
+                    <li class="mb-2">Under "File to import", click <strong>Choose File</strong> and select your downloaded <code>.sql</code> backup file.</li>
+                    <li class="mb-2">Scroll to the bottom of the page and click the <strong>Import</strong> (or <strong>Go</strong>) button.</li>
+                </ol>
+                <div class="alert alert-warning py-2 px-3 border-0 small mt-2">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Warning: This will overwrite all tables in the current active database.
+                </div>
+            </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Understood',
+        confirmButtonColor: '#0D7377'
+    });
+};
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -39,6 +39,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <form action="<?= BASE_URL ?>patients/register_process.php" method="POST" id="registerPatientForm" class="needs-validation" novalidate>
                 <!-- CSRF and configuration tokens -->
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="allow_duplicate" id="allow_duplicate" value="0">
 
                 <!-- Section 1: Demographics -->
                 <h4 class="fs-6 fw-bold border-bottom pb-2 mb-3 text-primary"><i class="bi bi-info-circle me-1"></i> Personal Demographic Details</h4>
@@ -183,6 +184,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 1. AJAX duplicate check triggers on blur
     dupTriggers.forEach(element => {
+        element.addEventListener('input', function() {
+            document.getElementById('allow_duplicate').value = '0';
+        });
         element.addEventListener('blur', function() {
             runDuplicateCheck();
         });
@@ -218,28 +222,54 @@ document.addEventListener('DOMContentLoaded', function() {
                     duplicateCheckedDate = bdate;
 
                     if (response.hasDuplicate && response.matches.length > 0) {
-                        const m = response.matches[0];
+                        // Find if there is an exact birthdate match
+                        const exactMatch = response.matches.find(m => m.birthdate === bdate);
+                        
+                        let title = 'Possible Duplicate Detected!';
+                        let htmlContent = '';
+                        let confirmText = 'Yes, register anyway';
+                        let cancelText = 'No, cancel';
+                        
+                        if (exactMatch) {
+                            title = 'Duplicate Patient Profile Found!';
+                            htmlContent = `A patient named <strong>${exactMatch.first_name} ${exactMatch.last_name}</strong> with the exact same birthdate (<strong>${exactMatch.birthdate}</strong>) is already registered.<br><br>
+                                           Purok: <strong>${exactMatch.purok || 'N/A'}</strong> | Sex: <strong>${exactMatch.sex}</strong> | Contact: <strong>${exactMatch.contact_number || 'N/A'}</strong><br><br>
+                                           Registering duplicates causes errors in patient medical histories. Are you sure this is a different patient?`;
+                            confirmText = 'Yes, register new';
+                        } else {
+                            // Name match but different birthdate
+                            const match = response.matches[0];
+                            title = 'Potential Duplicate Patient!';
+                            htmlContent = `A patient named <strong>${match.first_name} ${match.last_name}</strong> is already registered with a birthdate of <strong>${match.birthdate}</strong>.<br><br>
+                                           Purok: <strong>${match.purok || 'N/A'}</strong> | Sex: <strong>${match.sex}</strong> | Contact: <strong>${match.contact_number || 'N/A'}</strong><br><br>
+                                           If this is the same patient and the birthdate entered was a typo, please cancel. Otherwise, you can proceed.`;
+                            confirmText = 'Yes, register anyway';
+                        }
+
                         Swal.fire({
-                            title: 'Possible Duplicate Detected!',
-                            html: `A patient with the name <strong>${m.first_name} ${m.last_name}</strong>, born on <strong>${m.birthdate}</strong> is already registered.<br><br>
-                                   Purok: <strong>${m.purok || 'N/A'}</strong> | Sex: <strong>${m.sex}</strong><br><br>
-                                   Would you like to continue registering a new patient with this name anyway?`,
+                            title: title,
+                            html: htmlContent,
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonColor: '#e74c3c',
                             cancelButtonColor: '#0D7377',
-                            confirmButtonText: 'Yes, register new',
-                            cancelButtonText: 'No, cancel'
+                            confirmButtonText: confirmText,
+                            cancelButtonText: cancelText
                         }).then((result) => {
-                            if (!result.isConfirmed) {
+                            if (result.isConfirmed) {
+                                document.getElementById('allow_duplicate').value = '1';
+                            } else {
                                 // Clear input or navigate to search
                                 document.getElementById('first_name').value = '';
                                 document.getElementById('last_name').value = '';
                                 document.getElementById('birthdate').value = '';
+                                document.getElementById('allow_duplicate').value = '0';
                                 duplicateCheckedName = '';
                                 duplicateCheckedDate = '';
                             }
                         });
+                    } else {
+                        document.getElementById('allow_duplicate').value = '0';
                     }
                 },
                 error: function(xhr, status, error) {

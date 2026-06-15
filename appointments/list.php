@@ -26,10 +26,15 @@ $pdo = Database::getInstance()->getConnection();
 $role = $_SESSION['role'] ?? 'bhw';
 
 // Filters
+$filterServiceId = $_GET['service_id'] ?? '';
 $filterDate = $_GET['appointment_date'] ?? '';
 $filterStatus = $_GET['status'] ?? '';
 
 try {
+    // Fetch active service types for filter dropdown
+    $servicesStmt = $pdo->query("SELECT service_id, service_name FROM service_types WHERE is_active = 1 ORDER BY service_name ASC");
+    $serviceList = $servicesStmt->fetchAll();
+
     $sql = "
         SELECT 
             a.appointment_id, 
@@ -51,6 +56,10 @@ try {
     ";
     
     $params = [];
+    if (!empty($filterServiceId)) {
+        $sql .= " AND a.service_id = :service_id";
+        $params['service_id'] = $filterServiceId;
+    }
     if (!empty($filterDate)) {
         $sql .= " AND a.appointment_date = :app_date";
         $params['app_date'] = $filterDate;
@@ -312,10 +321,6 @@ require_once __DIR__ . '/../includes/sidebar.php';
         }
         .metric-card.cancelled-card::before {
             background-color: var(--danger-color, #dc3545);
-        }
-        #appointmentsTable_wrapper .dataTables_filter {
-            display: none !important;
-        }
         .dot-status-marker {
             width: 8px;
             height: 8px;
@@ -369,16 +374,23 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <form id="filterForm" method="GET" action="<?= BASE_URL ?>appointments/list.php">
                     <div class="row g-3 align-items-end">
                         <div class="col-md-3">
-                            <label for="search_name" class="form-label small fw-bold text-secondary">Search Patient</label>
-                            <input type="text" id="search_name" class="form-control" placeholder="Search by name..." autocomplete="off">
+                            <label for="service_id" class="form-label small fw-bold text-secondary">Service Type</label>
+                            <select name="service_id" id="service_id" class="form-select">
+                                <option value="">-- All Services --</option>
+                                <?php foreach ($serviceList as $s): ?>
+                                    <option value="<?= $s['service_id'] ?>" <?= $filterServiceId == $s['service_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($s['service_name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                         <div class="col-md-3">
                             <label for="appointment_date" class="form-label small fw-bold text-secondary">Specific Date</label>
-                            <input type="date" name="appointment_date" id="appointment_date" class="form-control" value="<?= htmlspecialchars($filterDate) ?>" onchange="document.getElementById('filterForm').submit();">
+                            <input type="date" name="appointment_date" id="appointment_date" class="form-control" value="<?= htmlspecialchars($filterDate) ?>">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label for="status" class="form-label small fw-bold text-secondary">Status</label>
-                            <select name="status" id="status" class="form-select" onchange="document.getElementById('filterForm').submit();">
+                            <select name="status" id="status" class="form-select">
                                 <option value="">-- All Statuses --</option>
                                 <option value="Scheduled" <?= $filterStatus === 'Scheduled' ? 'selected' : '' ?>>Scheduled</option>
                                 <option value="Completed" <?= $filterStatus === 'Completed' ? 'selected' : '' ?>>Completed</option>
@@ -386,21 +398,50 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 <option value="No-Show" <?= $filterStatus === 'No-Show' ? 'selected' : '' ?>>No-Show</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
-                            <?php if (!empty($filterDate) || !empty($filterStatus)): ?>
-                                <a href="<?= BASE_URL ?>appointments/list.php" class="btn btn-outline-secondary py-2 w-100 d-flex align-items-center justify-content-center gap-2" title="Clear Filters">
-                                    <i class="bi bi-x-circle"></i>
-                                    <span>Clear Filters</span>
-                                </a>
-                            <?php else: ?>
-                                <button type="button" class="btn btn-outline-secondary py-2 w-100 d-flex align-items-center justify-content-center gap-2" disabled>
-                                    <i class="bi bi-funnel"></i>
-                                    <span>No Active Filters</span>
-                                </button>
-                            <?php endif; ?>
+                        <div class="col-md-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-funnel-fill"></i>
+                                <span>Filter</span>
+                            </button>
+                            <a href="<?= BASE_URL ?>appointments/list.php" class="btn btn-outline-secondary w-100 py-2 d-flex align-items-center justify-content-center gap-2" title="Clear Filters">
+                                <i class="bi bi-x-circle"></i>
+                                <span>Clear</span>
+                            </a>
                         </div>
                     </div>
                 </form>
+
+                <?php if (!empty($filterServiceId) || !empty($filterDate) || !empty($filterStatus)): ?>
+                    <div class="d-flex flex-wrap gap-2 align-items-center mt-3 pt-3 border-top">
+                        <span class="text-secondary small fw-bold me-2">Active Filters:</span>
+                        <?php if (!empty($filterServiceId)): 
+                            $serviceName = '';
+                            foreach ($serviceList as $s) {
+                                if ($s['service_id'] == $filterServiceId) {
+                                    $serviceName = $s['service_name'];
+                                    break;
+                                }
+                            }
+                        ?>
+                            <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                                Service: <?= htmlspecialchars($serviceName) ?> 
+                                <a href="?<?= http_build_query(array_merge($_GET, ['service_id' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                            </span>
+                        <?php endif; ?>
+                        <?php if (!empty($filterDate)): ?>
+                            <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                                Date: <?= htmlspecialchars($filterDate) ?> 
+                                <a href="?<?= http_build_query(array_merge($_GET, ['appointment_date' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                            </span>
+                        <?php endif; ?>
+                        <?php if (!empty($filterStatus)): ?>
+                            <span class="badge bg-primary d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill shadow-xs" style="font-size: 11px;">
+                                Status: <?= htmlspecialchars($filterStatus) ?> 
+                                <a href="?<?= http_build_query(array_merge($_GET, ['status' => ''])) ?>" class="text-white ms-1"><i class="bi bi-x-circle"></i></a>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -651,13 +692,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 2. Custom Search Input logic
-    const searchNameInput = document.getElementById('search_name');
-    if (searchNameInput && appointmentsTable) {
-        searchNameInput.addEventListener('input', function() {
-            appointmentsTable.search(this.value).draw();
-        });
-    }
 
     // 3. Event delegation for archiving appointments (Admin only)
     document.addEventListener('click', function(event) {

@@ -260,6 +260,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
+                    </div>
                 </div>
 
                 <!-- Tab Pane 4: Health Records -->
