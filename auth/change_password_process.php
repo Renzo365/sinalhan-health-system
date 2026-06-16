@@ -70,6 +70,11 @@ try {
         throw new Exception('The current password you entered is incorrect.');
     }
 
+    // Prevent user from reusing their current password as the new password
+    if (password_verify($newPassword, $user['password_hash'])) {
+        throw new Exception('Your new password cannot be the same as your current password.');
+    }
+
     // 4. Update Password in Database
     $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
     $updateStmt = $pdo->prepare("UPDATE users SET password_hash = ? WHERE user_id = ?");

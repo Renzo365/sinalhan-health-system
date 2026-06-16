@@ -249,13 +249,21 @@ try {
                 throw new Exception('Passwords do not match.');
             }
 
-            // Fetch username
-            $userStmt = $pdo->prepare("SELECT username FROM users WHERE user_id = ? AND is_archived = 0");
+            // Fetch username and current password hash to check for password reuse
+            $userStmt = $pdo->prepare("SELECT username, password_hash FROM users WHERE user_id = ? AND is_archived = 0");
             $userStmt->execute([$userId]);
-            $username = $userStmt->fetchColumn();
+            $user = $userStmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$username) {
+            if (!$user) {
                 throw new Exception('User not found.');
+            }
+
+            $username = $user['username'];
+            $currentHash = $user['password_hash'];
+
+            // Prevent setting the temporary password to the user's current password
+            if (password_verify($newPassword, $currentHash)) {
+                throw new Exception('The new temporary password cannot be the same as the user\'s current password.');
             }
 
             // Update user password hash and set the force-reset flag on next login
