@@ -211,6 +211,7 @@ try {
         case 'reset_password':
             // Reset user password
             $userId = (int)($_POST['user_id'] ?? 0);
+            $adminPassword = $_POST['admin_password'] ?? '';
             $newPassword = $_POST['new_password'] ?? '';
             $confirmPassword = $_POST['confirm_password'] ?? '';
 
@@ -218,8 +219,22 @@ try {
                 throw new Exception('Invalid user ID.');
             }
 
+            if (empty($adminPassword)) {
+                throw new Exception('Administrator password is required to authorize this action.');
+            }
+
             if (empty($newPassword) || empty($confirmPassword)) {
                 throw new Exception('Password fields cannot be empty.');
+            }
+
+            // Verify logged-in administrator's password to authorize the reset
+            $adminId = (int)($_SESSION['user_id'] ?? 0);
+            $adminQuery = $pdo->prepare("SELECT password_hash FROM users WHERE user_id = ? AND role = 'admin' AND is_active = 1");
+            $adminQuery->execute([$adminId]);
+            $adminHash = $adminQuery->fetchColumn();
+
+            if (!$adminHash || !password_verify($adminPassword, $adminHash)) {
+                throw new Exception('Invalid administrator password. Authorization failed.');
             }
 
             if (strlen($newPassword) < 8 || 
@@ -243,9 +258,9 @@ try {
                 throw new Exception('User not found.');
             }
 
-            // Update user password hash
+            // Update user password hash and set the force-reset flag on next login
             $newPasswordHash = password_hash($newPassword, PASSWORD_DEFAULT);
-            $updateStmt = $pdo->prepare("UPDATE users SET password_hash = ? WHERE user_id = ?");
+            $updateStmt = $pdo->prepare("UPDATE users SET password_hash = ?, must_change_password = 1 WHERE user_id = ?");
             $updateStmt->execute([$newPasswordHash, $userId]);
 
             log_activity($pdo, "Reset password for user '{$username}'", 'Admin', $userId);

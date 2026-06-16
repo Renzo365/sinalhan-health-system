@@ -247,3 +247,10 @@ Stack trace:
 [14-Jun-2026 20:30:00 Asia/Manila] Password settings update failure: New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.
 [14-Jun-2026 20:30:31 Asia/Manila] Password settings update failure: New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.
 [14-Jun-2026 20:35:06 Asia/Manila] Password settings update failure: New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.
+[15-Jun-2026 23:34:05 Asia/Manila] Settings error: Invalid file content. Only real PNG and JPEG/JPG images are allowed.
+[15-Jun-2026 23:34:13 Asia/Manila] Settings error: Invalid file content. Only real PNG and JPEG/JPG images are allowed.
+[15-Jun-2026 23:34:23 Asia/Manila] Settings error: Invalid file content. Only real PNG and JPEG/JPG images are allowed.
+[16-Jun-2026 00:22:46 Asia/Manila] Forced password change failure: New password cannot be the same as your current temporary password.
+[16-Jun-2026 00:23:03 Asia/Manila] Forced password change failure: New password cannot be the same as your current temporary password.
+[16-Jun-2026 00:44:32 Asia/Manila] Forced password change failure: New password cannot be the same as your current temporary password.
+[16-Jun-2026 11:14:49 Asia/Manila] Forced password change failure: New password cannot be the same as your current temporary password.

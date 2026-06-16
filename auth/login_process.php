@@ -70,7 +70,7 @@ try {
     }
 
     $stmt = $pdo->prepare("
-        SELECT user_id, username, password_hash, first_name, last_name, role, is_active, is_archived, two_fa_enabled, two_fa_secret, theme, font_size 
+        SELECT user_id, username, password_hash, first_name, last_name, role, is_active, is_archived, two_fa_enabled, two_fa_secret, theme, font_size, must_change_password 
         FROM users 
         WHERE username = ?
     ");
@@ -109,6 +109,7 @@ try {
             $_SESSION['temp_2fa_role'] = $user['role'];
             $_SESSION['temp_2fa_theme'] = $user['theme'];
             $_SESSION['temp_2fa_font_size'] = $user['font_size'];
+            $_SESSION['temp_2fa_must_change_password'] = $user['must_change_password'];
 
             $_SESSION['alert'] = [
                 'type' => 'info',
@@ -132,6 +133,7 @@ try {
         $_SESSION['role'] = $user['role'];
         $_SESSION['theme'] = $user['theme'];
         $_SESSION['font_size'] = $user['font_size'];
+        $_SESSION['must_change_password'] = $user['must_change_password'];
         $_SESSION['login_time'] = time();
 
         // 7. Update last login details in users table
@@ -145,16 +147,27 @@ try {
         // 8. Log the login activity
         log_activity($pdo, 'Logged in', 'Auth', $user['user_id'], 'IP: ' . ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'));
 
-        // Success Alert Flash
-        $_SESSION['alert'] = [
-            'type' => 'success',
-            'title' => 'Welcome Back!',
-            'message' => 'Logged in successfully as ' . htmlspecialchars($user['first_name'] ?? 'User') . '.'
-        ];
+        // Check if forced password reset is active
+        if (isset($_SESSION['must_change_password']) && $_SESSION['must_change_password'] == 1) {
+            $_SESSION['alert'] = [
+                'type' => 'warning',
+                'title' => 'Password Reset Required',
+                'message' => 'An administrator has reset your password. Please set a new secure password to continue.'
+            ];
+            header('Location: ' . BASE_URL . 'auth/force_change_password.php');
+            exit;
+        } else {
+            // Success Alert Flash
+            $_SESSION['alert'] = [
+                'type' => 'success',
+                'title' => 'Welcome Back!',
+                'message' => 'Logged in successfully as ' . htmlspecialchars($user['first_name'] ?? 'User') . '.'
+            ];
 
-        // 9. Redirect to landing page (index.php will route them to correct role dashboard)
-        header('Location: ' . BASE_URL . 'index.php');
-        exit;
+            // 9. Redirect to landing page (index.php will route them to correct role dashboard)
+            header('Location: ' . BASE_URL . 'index.php');
+            exit;
+        }
 
     } else {
         // Log failed login attempt

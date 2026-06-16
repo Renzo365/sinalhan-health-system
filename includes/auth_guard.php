@@ -25,3 +25,12 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Redirect user to force password update page if the flag is active
+if (isset($_SESSION['must_change_password']) && $_SESSION['must_change_password'] == 1) {
+    $currentScript = basename($_SERVER['SCRIPT_NAME']);
+    if ($currentScript !== 'force_change_password.php' && $currentScript !== 'logout.php' && $currentScript !== 'force_change_password_process.php') {
+        header('Location: ' . BASE_URL . 'auth/force_change_password.php');
+        exit;
+    }
+}
+

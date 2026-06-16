@@ -86,6 +86,7 @@ try {
         $_SESSION['role'] = $_SESSION['temp_2fa_role'];
         $_SESSION['theme'] = $_SESSION['temp_2fa_theme'] ?? 'light';
         $_SESSION['font_size'] = $_SESSION['temp_2fa_font_size'] ?? 'normal';
+        $_SESSION['must_change_password'] = $_SESSION['temp_2fa_must_change_password'] ?? 0;
         $_SESSION['login_time'] = time();
 
         // Clear temporary variables
@@ -95,6 +96,7 @@ try {
         unset($_SESSION['temp_2fa_role']);
         unset($_SESSION['temp_2fa_theme']);
         unset($_SESSION['temp_2fa_font_size']);
+        unset($_SESSION['temp_2fa_must_change_password']);
 
         // Update database log
         $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW(), last_login_ip = ? WHERE user_id = ?");
@@ -102,14 +104,25 @@ try {
 
         log_activity($pdo, 'Logged in (2FA Verified)', 'Auth', $userId, 'IP: ' . $ipAddress);
 
-        $_SESSION['alert'] = [
-            'type' => 'success',
-            'title' => 'Welcome Back!',
-            'message' => 'Two-factor code verified successfully.'
-        ];
+        // Check if forced password reset is active
+        if (isset($_SESSION['must_change_password']) && $_SESSION['must_change_password'] == 1) {
+            $_SESSION['alert'] = [
+                'type' => 'warning',
+                'title' => 'Password Reset Required',
+                'message' => 'An administrator has reset your password. Please set a new secure password to continue.'
+            ];
+            header('Location: ' . BASE_URL . 'auth/force_change_password.php');
+            exit;
+        } else {
+            $_SESSION['alert'] = [
+                'type' => 'success',
+                'title' => 'Welcome Back!',
+                'message' => 'Two-factor code verified successfully.'
+            ];
 
-        header('Location: ' . BASE_URL . 'index.php');
-        if (!defined('TESTING')) exit;
+            header('Location: ' . BASE_URL . 'index.php');
+            if (!defined('TESTING')) exit;
+        }
 
     } else {
         // Log failed 2FA verification attempt

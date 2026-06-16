@@ -104,13 +104,15 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                             <i class="bi bi-pencil-square fs-5"></i>
                                         </a>
                                         
-                                        <!-- Reset Password -->
-                                        <button class="btn btn-sm btn-outline-warning border-0 p-1 reset-pass-btn" 
-                                                data-id="<?= $u['user_id'] ?>" 
-                                                data-username="<?= htmlspecialchars($u['username']) ?>"
-                                                title="Reset Password">
-                                            <i class="bi bi-key-fill fs-5"></i>
-                                        </button>
+                                        <!-- Reset Password (Only allow resetting other users' passwords) -->
+                                        <?php if ($u['user_id'] !== (int)$_SESSION['user_id']): ?>
+                                            <button class="btn btn-sm btn-outline-warning border-0 p-1 reset-pass-btn" 
+                                                    data-id="<?= $u['user_id'] ?>" 
+                                                    data-username="<?= htmlspecialchars($u['username']) ?>"
+                                                    title="Reset Password">
+                                                <i class="bi bi-key-fill fs-5"></i>
+                                            </button>
+                                        <?php endif; ?>
                                         
                                         <!-- Status Toggle Toggle -->
                                         <?php if ($u['user_id'] !== (int)$_SESSION['user_id']): ?>
@@ -161,6 +163,15 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <input type="hidden" name="user_id" id="modal_user_id" value="">
 
                     <p class="text-secondary">You are resetting the password for account: <strong id="modal_username_display" class="text-primary"></strong></p>
+
+                    <!-- Verification: Requires the currently logged-in administrator's password to authorize the reset -->
+                    <div class="mb-3 position-relative">
+                        <label for="admin_password" class="form-label font-weight-bold text-dark mb-1">Your Administrator Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-key-fill text-secondary"></i></span>
+                            <input type="password" name="admin_password" id="admin_password" class="form-control border-start-0" placeholder="Enter your current password to authorize" required>
+                        </div>
+                    </div>
 
                     <div class="mb-3 position-relative">
                         <label for="new_password" class="form-label font-weight-bold text-dark mb-1">New Password</label>
@@ -219,6 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.getElementById('modal_user_id').value = id;
             document.getElementById('modal_username_display').innerText = '@' + username;
+            document.getElementById('admin_password').value = '';
             document.getElementById('new_password').value = '';
             document.getElementById('confirm_password').value = '';
             
