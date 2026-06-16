@@ -73,16 +73,21 @@ body {
 /* Page Wrapper Structure */
 #wrapper {
     display: flex;
-    width: 100vw;
+    width: 100%; /* Changed from 100vw to prevent scrollbar-induced width calculations and layout shift */
     min-height: 100vh;
 }
 
 /* Sidebar Styling */
 #sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
     width: var(--sidebar-width);
+    min-width: var(--sidebar-width); /* Lock min-width to prevent resizing/shrinking on long pages */
+    flex-shrink: 0; /* Prevent flexbox from squeezing the sidebar on pages with scrollbars or wide forms */
     background-color: var(--sidebar-bg);
     color: #E8F4F5;
-    transition: width var(--transition-speed) ease;
+    transition: width var(--transition-speed) ease, min-width var(--transition-speed) ease; /* Smooth transition for both width properties */
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -91,10 +96,13 @@ body {
 
 #sidebar.collapsed {
     width: var(--sidebar-collapsed-width);
+    min-width: var(--sidebar-collapsed-width); /* Lock collapsed width to prevent collapse distortions */
 }
 
 .sidebar-header {
     height: var(--navbar-height);
+    min-height: var(--navbar-height); /* Lock height to prevent vertical misalignment with the top navbar */
+    flex-shrink: 0; /* Prevent flex compression */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -222,7 +230,11 @@ body {
 
 /* Top Navbar Styling */
 .top-navbar {
+    position: sticky;
+    top: 0;
     height: var(--navbar-height);
+    min-height: var(--navbar-height); /* Lock height to match the sidebar header's bottom border line */
+    flex-shrink: 0; /* Prevent layout compression from shrinking the navbar height */
     background-color: var(--surface-white);
     border-bottom: 1px solid var(--border-color);
     display: flex;
