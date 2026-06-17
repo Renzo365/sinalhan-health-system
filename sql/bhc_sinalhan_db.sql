@@ -383,6 +383,16 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Patient record not found or archived.';
     END IF;
 
+    -- Idempotency Guard: Prevent duplicate active queue tickets for the same patient today
+    IF EXISTS (
+        SELECT 1 FROM queue 
+        WHERE patient_id = p_patient_id 
+          AND queue_date = v_today 
+          AND status IN ('Waiting', 'Serving')
+    ) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Patient already has an active queue ticket today.';
+    END IF;
+
     -- Fetch service type prefix
     SELECT COALESCE(prefix, 'Q') INTO v_prefix 
     FROM service_types 

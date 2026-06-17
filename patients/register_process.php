@@ -82,6 +82,18 @@ try {
     // 4. Save Patient to Database
     $pdo = Database::getInstance()->getConnection();
 
+    // Idempotency Guard: Prevent double-click submissions within a 30-second window
+    $recentStmt = $pdo->prepare("
+        SELECT 1 FROM patients 
+        WHERE LOWER(first_name) = LOWER(?) 
+          AND LOWER(last_name) = LOWER(?) 
+          AND created_at >= DATE_SUB(NOW(), INTERVAL 30 SECOND)
+    ");
+    $recentStmt->execute([$firstName, $lastName]);
+    if ($recentStmt->fetch()) {
+        throw new Exception('A patient with this name was registered moments ago. Please wait before submitting again.');
+    }
+
     // Check for exact duplicate if override flag is not set
     if ($allowDuplicate !== '1') {
         $checkStmt = $pdo->prepare("

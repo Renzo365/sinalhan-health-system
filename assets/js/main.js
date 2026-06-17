@@ -51,4 +51,24 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     };
+
+    // Frontend Idempotency Defense: Prevent Double Form Submissions
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function() {
+            // Find all submit buttons within the form
+            const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+            submitButtons.forEach(function(button) {
+                // Disable the button to prevent double-clicks
+                button.disabled = true;
+                // Add a visual indicator if it's a button element
+                if (button.tagName.toLowerCase() === 'button') {
+                    // Save original content in dataset if not already saved
+                    if (!button.dataset.originalText) {
+                        button.dataset.originalText = button.innerHTML;
+                    }
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                }
+            });
+        });
+    });
 });

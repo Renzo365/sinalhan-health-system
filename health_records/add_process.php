@@ -86,6 +86,18 @@ try {
         throw new Exception('The selected service category is either deactivated or does not exist.');
     }
 
+    // Idempotency Guard: Prevent duplicate submissions within a 30-second window
+    $recentStmt = $pdo->prepare("
+        SELECT 1 FROM health_records 
+        WHERE patient_id = ? 
+          AND service_id = ? 
+          AND created_at >= DATE_SUB(NOW(), INTERVAL 30 SECOND)
+    ");
+    $recentStmt->execute([$patientId, $serviceId]);
+    if ($recentStmt->fetch()) {
+        throw new Exception('A similar consultation record was just submitted. Please wait before submitting again.');
+    }
+
     // Validate Vitals formats and ranges
     if ($bloodPressure && !preg_match('/^\d{2,3}\/\d{2,3}$/', $bloodPressure)) {
         throw new Exception('Invalid blood pressure format. Must match "Systolic/Diastolic" (e.g. 120/80).');

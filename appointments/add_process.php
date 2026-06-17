@@ -100,6 +100,18 @@ try {
         throw new Exception('The selected service category is either deactivated or does not exist.');
     }
 
+    // Idempotency Guard: Prevent duplicate submissions within a 30-second window
+    $recentStmt = $pdo->prepare("
+        SELECT 1 FROM appointments 
+        WHERE patient_id = ? 
+          AND service_id = ? 
+          AND created_at >= DATE_SUB(NOW(), INTERVAL 30 SECOND)
+    ");
+    $recentStmt->execute([$patientId, $serviceId]);
+    if ($recentStmt->fetch()) {
+        throw new Exception('A similar appointment was just scheduled. Please wait before submitting again.');
+    }
+
     // 4. Save Appointment to Database
     $insertStmt = $pdo->prepare("
         INSERT INTO appointments (

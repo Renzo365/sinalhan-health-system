@@ -44,6 +44,18 @@ try {
         throw new Exception('Please select a valid service category.');
     }
 
+    // Idempotency Guard: Prevent duplicate submissions within a 30-second window
+    $recentStmt = $pdo->prepare("
+        SELECT 1 FROM queue 
+        WHERE patient_id = ? 
+          AND service_id = ? 
+          AND created_at >= DATE_SUB(NOW(), INTERVAL 30 SECOND)
+    ");
+    $recentStmt->execute([$patientId, $serviceId]);
+    if ($recentStmt->fetch()) {
+        throw new Exception('A queue ticket for this service was just assigned to the patient. Please wait before submitting again.');
+    }
+
     // 4. Generate Daily Queue Number & Save via Stored Procedure
     $stmt = $pdo->prepare("CALL sp_assign_queue_ticket(?, ?, ?, @ticket_str, @q_num)");
     $stmt->execute([$patientId, $serviceId, $_SESSION['user_id']]);
