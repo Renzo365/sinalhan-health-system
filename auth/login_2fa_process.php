@@ -139,6 +139,15 @@ try {
         if (!defined('TESTING')) exit;
     }
 
+} catch (PDOException $e) {
+    error_log("2FA verification database failure: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Authentication Error',
+        'message' => 'A system database error occurred. Please contact the administrator.'
+    ];
+    header('Location: ' . BASE_URL . 'auth/login.php');
+    if (!defined('TESTING')) exit;
 } catch (Exception $e) {
     error_log("2FA verification process error: " . $e->getMessage());
     $_SESSION['alert'] = [

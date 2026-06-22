@@ -41,17 +41,6 @@ try {
     // 3. Query User from Database
     $pdo = Database::getInstance()->getConnection();
 
-    // Auto-create login_attempts table if it does not exist (Defensive database upgrade)
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS login_attempts (
-            ip_address VARCHAR(45) NOT NULL,
-            username VARCHAR(100) NOT NULL,
-            attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            KEY idx_ip_username (ip_address, username),
-            KEY idx_attempted_at (attempted_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    ");
-
     $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
     // Prune attempts older than 24 hours to prevent table bloat
@@ -184,6 +173,15 @@ try {
         exit;
     }
 
+} catch (PDOException $e) {
+    error_log("Login database failure: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Authentication Error',
+        'message' => 'A system database error occurred. Please contact the administrator.'
+    ];
+    header('Location: ' . BASE_URL . 'auth/login.php');
+    exit;
 } catch (Exception $e) {
     error_log("Login processing exception: " . $e->getMessage());
     $_SESSION['alert'] = [

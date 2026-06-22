@@ -111,6 +111,18 @@ try {
     header('Location: ' . BASE_URL . 'patients/view.php?id=' . $patientId);
     if (!defined('TESTING')) exit;
 
+} catch (PDOException $e) {
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log("Queue ticket assignment database failure: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Assignment Failed',
+        'message' => 'A system database error occurred. Please contact the administrator.'
+    ];
+    header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'queue/assign.php')));
+    if (!defined('TESTING')) exit;
 } catch (Exception $e) {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();

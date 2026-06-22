@@ -575,12 +575,20 @@ body.font-lg .table td {
 a:focus-visible, 
 button:focus-visible, 
 .menu-link:focus-visible,
-.btn:focus-visible,
-.form-select:focus-visible,
-.form-control:focus-visible {
-    outline: 3px solid var(--primary-light) !important;
-    outline-offset: 2px !important;
-    box-shadow: 0 0 0 4px rgba(20, 163, 168, 0.25) !important;
+.btn:focus-visible {
+    outline: 2px solid var(--primary-light) !important;
+    outline-offset: 1px !important;
+    box-shadow: 0 0 0 3px rgba(20, 163, 168, 0.25) !important;
+}
+
+/* Accessible soft focus ring for form inputs & selects to prevent clipping (WCAG 2.4.7) */
+.form-control:focus,
+.form-control:focus-visible,
+.form-select:focus,
+.form-select:focus-visible {
+    outline: none !important;
+    border-color: var(--primary-light) !important;
+    box-shadow: 0 0 0 3px rgba(20, 163, 168, 0.25) !important;
 }
 
 /* Enlarge Small Touch Targets (WCAG 2.5.5 - Target Size minimum 44x44px) */

@@ -59,6 +59,22 @@ try {
         throw new Exception('Please fill in all required fields marked with an asterisk (*).');
     }
 
+    if (!preg_match('/^[a-zA-ZñÑ\s\-\.]+$/u', $firstName)) {
+        throw new Exception('First name can only contain letters, spaces, hyphens, and periods.');
+    }
+
+    if (!preg_match('/^[a-zA-ZñÑ\s\-\.]+$/u', $lastName)) {
+        throw new Exception('Last name can only contain letters, spaces, hyphens, and periods.');
+    }
+
+    if ($middleName && !preg_match('/^[a-zA-ZñÑ\s\-\.]+$/u', $middleName)) {
+        throw new Exception('Middle name can only contain letters, spaces, hyphens, and periods.');
+    }
+
+    if ($suffix && !preg_match('/^[a-zA-Z\s\-\.]+$/', $suffix)) {
+        throw new Exception('Suffix can only contain letters, spaces, hyphens, and periods.');
+    }
+
     if (strtotime($birthdate) > time()) {
         throw new Exception('Birthdate cannot be a future date.');
     }
@@ -157,6 +173,23 @@ try {
     header('Location: ' . BASE_URL . 'patients/list.php');
     if (!defined('TESTING')) exit;
 
+} catch (PDOException $e) {
+    error_log("Patient registration database failure: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+    $errorMessage = 'A system database error occurred. Please contact the administrator.';
+    if (isset($_POST['offline_sync'])) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => $errorMessage]);
+        exit;
+    }
+    $_SESSION['old_inputs'] = $_POST;
+    $_SESSION['old_inputs_flash'] = true;
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Registration Failed',
+        'message' => $errorMessage
+    ];
+    header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'patients/register.php')));
+    if (!defined('TESTING')) exit;
 } catch (Exception $e) {
     error_log("Patient registration failure: " . $e->getMessage());
     if (isset($_POST['offline_sync'])) {

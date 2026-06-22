@@ -197,6 +197,18 @@ try {
     header('Location: ' . BASE_URL . 'patients/view.php?id=' . $patientId);
     if (!defined('TESTING')) exit;
 
+} catch (PDOException $e) {
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log("Health records database failure: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Failed to Save Record',
+        'message' => 'A system database error occurred. Please contact the administrator.'
+    ];
+    header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'health_records/list.php')));
+    if (!defined('TESTING')) exit;
 } catch (Exception $e) {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();

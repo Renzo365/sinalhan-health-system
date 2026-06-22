@@ -334,6 +334,19 @@ INSERT INTO system_settings (setting_key, setting_value) VALUES
 ON DUPLICATE KEY UPDATE setting_key=setting_key;
 
 -- =============================================================
+-- Table: login_attempts
+-- Stores temporary records of failed authentication attempts for rate limiting.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS login_attempts (
+    attempt_id INT AUTO_INCREMENT PRIMARY KEY,
+    ip_address VARCHAR(45) NOT NULL,
+    username VARCHAR(100) NOT NULL,
+    attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_ip_username (ip_address, username),
+    KEY idx_attempted_at (attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================================
 -- Stored Procedures Mappings
 -- =============================================================
 

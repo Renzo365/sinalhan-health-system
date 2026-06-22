@@ -154,6 +154,15 @@ try {
     header('Location: ' . BASE_URL . 'appointments/list.php');
     if (!defined('TESTING')) exit;
 
+} catch (PDOException $e) {
+    error_log("Appointment scheduling database failure: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Failed to Book Appointment',
+        'message' => 'A system database error occurred. Please contact the administrator.'
+    ];
+    header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'appointments/list.php')));
+    if (!defined('TESTING')) exit;
 } catch (Exception $e) {
     error_log("Appointment scheduling failure: " . $e->getMessage());
     $_SESSION['old_inputs'] = $_POST;
