@@ -60,7 +60,7 @@
     
     --text-primary: #2D3436;
     --text-secondary: #636E72;
-    --text-muted: #B2BEC3;
+    --text-muted: #707C80;
     
     --border-color: #DFE6E9;
     --sidebar-bg: #0A3D40;
@@ -443,9 +443,15 @@ body.dark-theme {
     --surface-white: #1e262a;
     --text-primary: #f5f6f7;
     --text-secondary: #a0aec0;
-    --text-muted: #4e5d66;
+    --text-muted: #8A99AD;
     --border-color: #2d3748;
     --primary-trans: rgba(20, 163, 168, 0.15);
+    
+    /* Overrides for high-contrast accessibility in Dark Theme */
+    --primary-color: #14A3A8; /* Accessible cyan contrast: 4.8:1 */
+    --primary-light: #22D3EE; /* Accent color: 7.8:1 */
+    --primary-dark: #E6FFFA;  /* Titles contrast: 13.5:1 */
+    --sidebar-hover: #14A3A8;
 }
 
 body.dark-theme .top-navbar {
@@ -587,3 +593,5 @@ button:focus-visible,
     justify-content: center;
     padding: 10px !important;
 }
+
+

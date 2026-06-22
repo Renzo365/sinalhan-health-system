@@ -147,6 +147,16 @@ $clinicNameSetting = get_setting($loginPdo, 'clinic_name', 'Barangay Sinalhan');
                         text: 'Please fill in both fields before submitting.',
                         confirmButtonColor: '#0D7377'
                     });
+                } else {
+                    // Disable the button and change text to visual loading spinner
+                    const submitBtn = loginForm.querySelector('button[type="submit"]');
+                    submitBtn.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Verifying...</span>
+                    `;
+                    setTimeout(() => {
+                        submitBtn.disabled = true;
+                    }, 0);
                 }
             });
         });

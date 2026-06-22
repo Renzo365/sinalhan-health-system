@@ -210,6 +210,8 @@ body::after {
     color: var(--text-secondary);
     transition: color 0.2s ease;
     z-index: 10;
+    padding: 12px; /* Expands interactive hit-area to meet 44x44px target sizes */
+    margin-right: -12px; /* Re-aligns visual bounds after padding */
 }
 
 .password-toggle:hover {
