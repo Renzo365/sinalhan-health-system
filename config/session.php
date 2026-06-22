@@ -61,5 +61,32 @@ if (php_sapi_name() !== 'cli') {
     
     // Update the last active timestamp to current time for subsequent request checks
     $_SESSION['last_activity'] = time();
+
+    // Flash-style input retention logic for forms
+    if (!isset($_SESSION['old_inputs'])) {
+        $_SESSION['old_inputs'] = [];
+    }
+
+    if (isset($_SESSION['old_inputs_flash']) && $_SESSION['old_inputs_flash'] === true) {
+        // Keep the inputs for this request, but mark them to clear next time
+        unset($_SESSION['old_inputs_flash']);
+    } else {
+        // Fresh request, clear preserved inputs
+        $_SESSION['old_inputs'] = [];
+    }
 }
+
+// Global functions to retrieve old values
+function old($key, $default = '') {
+    $val = $_SESSION['old_inputs'][$key] ?? $default;
+    return htmlspecialchars((string)$val, ENT_QUOTES, 'UTF-8');
+}
+
+function old_select($key, $optionValue, $defaultSelected = false) {
+    if (isset($_SESSION['old_inputs'][$key])) {
+        return $_SESSION['old_inputs'][$key] == $optionValue ? 'selected' : '';
+    }
+    return $defaultSelected ? 'selected' : '';
+}
+
 

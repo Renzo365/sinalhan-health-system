@@ -1,5 +1,14 @@
 /* assets/css/style.css */
 
+/* Local Outfit Webfont Integration */
+@font-face {
+    font-family: 'Outfit';
+    font-weight: 300 800;
+    font-style: normal;
+    font-display: swap;
+    src: url('../fonts/Outfit.woff2') format('woff2');
+}
+
 /* Local Inter Webfont Integration (Offline-First compliance) */
 @font-face {
     font-family: 'Inter';
@@ -313,6 +322,7 @@ body {
 }
 
 .page-title {
+    font-family: 'Outfit', sans-serif;
     font-size: 24px;
     font-weight: 700;
     color: var(--primary-dark);
@@ -327,10 +337,12 @@ body {
 
 /* Cards Design */
 .card-custom {
-    background-color: var(--surface-white);
-    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(13, 115, 119, 0.08);
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.015);
     margin-bottom: 30px;
     transition: transform var(--transition-speed), box-shadow var(--transition-speed);
 }
@@ -479,9 +491,13 @@ body.dark-theme .list-group-item-action:hover {
     color: var(--text-primary);
 }
 
-body.dark-theme .card, body.dark-theme .card-custom {
-    background-color: var(--surface-white);
-    border-color: var(--border-color);
+body.dark-theme .card, 
+body.dark-theme .card-custom,
+body.dark-theme .metric-card {
+    background-color: rgba(30, 38, 42, 0.75) !important;
+    border-color: rgba(20, 163, 168, 0.15) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 body.dark-theme .card-header, 
@@ -545,3 +561,29 @@ body.font-lg .table td {
     font-size: 18px !important;
 }
 
+/* ==========================================================================
+   Accessibility & Keyboard Navigation Enhancements (WCAG 2.2 AA)
+   ========================================================================== */
+
+/* Focus Indicator Overrides (WCAG 2.4.7 - Focus Visible) */
+a:focus-visible, 
+button:focus-visible, 
+.menu-link:focus-visible,
+.btn:focus-visible,
+.form-select:focus-visible,
+.form-control:focus-visible {
+    outline: 3px solid var(--primary-light) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(20, 163, 168, 0.25) !important;
+}
+
+/* Enlarge Small Touch Targets (WCAG 2.5.5 - Target Size minimum 44x44px) */
+.table-custom td .btn-sm,
+.table td .btn-sm {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px !important;
+}

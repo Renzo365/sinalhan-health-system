@@ -225,6 +225,8 @@ try {
         $pdo->rollBack();
     }
     error_log("Health records editing failure: " . $e->getMessage());
+    $_SESSION['old_inputs'] = $_POST;
+    $_SESSION['old_inputs_flash'] = true;
     $_SESSION['alert'] = [
         'type' => 'error',
         'title' => 'Failed to Update Record',

@@ -40,7 +40,7 @@ try {
     if ($queueId <= 0) {
         throw new Exception('Please specify a valid queue ticket ID.');
     }
-    if (!in_array($action, ['serve', 'complete', 'noshow'])) {
+    if (!in_array($action, ['serve', 'complete', 'noshow', 'revert'])) {
         throw new Exception('Invalid queue action requested.');
     }
 
@@ -111,6 +111,23 @@ try {
             'type' => 'info',
             'title' => 'Patient No-Show',
             'message' => "Ticket #{$ticketStr} marked as No-Show."
+        ];
+    } elseif ($action === 'revert') {
+        if ($ticket['status'] !== 'Serving') {
+            throw new Exception('Only tickets currently being served can be reverted back to waiting.');
+        }
+
+        $updateStmt = $pdo->prepare("UPDATE queue SET status = 'Waiting', serving_time = NULL WHERE queue_id = ?");
+        $updateStmt->execute([$queueId]);
+
+        log_activity($pdo, "Reverted queue ticket #{$ticketStr} for patient '{$patientFullName}' back to Waiting", 'Queue', $queueId);
+
+        add_notification($pdo, null, 'Queue Reverted', "Ticket #{$ticketStr} ('{$patientFullName}') was returned to the waiting queue.", 'info');
+
+        $_SESSION['alert'] = [
+            'type' => 'info',
+            'title' => 'Queue Reverted',
+            'message' => "Ticket #{$ticketStr} has been returned to the waiting queue."
         ];
     }
 

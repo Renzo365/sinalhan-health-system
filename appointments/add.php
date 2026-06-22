@@ -19,6 +19,7 @@ $pdo = Database::getInstance()->getConnection();
 
 $patientId = (int)($_GET['patient_id'] ?? 0);
 $patientDetails = null;
+$oldPatientName = '';
 
 try {
     // If patient_id is locked from URL query
@@ -35,6 +36,18 @@ try {
             ];
             header('Location: ' . BASE_URL . 'appointments/list.php');
             exit;
+        }
+    } else {
+        // If there's an old input patient_id (redirect back on validation fail)
+        $oldPatientId = (int)old('patient_id');
+        if ($oldPatientId > 0) {
+            $stmtOldPat = $pdo->prepare("SELECT first_name, last_name, suffix, birthdate, sex, purok FROM patients WHERE patient_id = ? AND is_archived = 0");
+            $stmtOldPat->execute([$oldPatientId]);
+            $oldPat = $stmtOldPat->fetch();
+            if ($oldPat) {
+                $age = (new DateTime())->diff(new DateTime($oldPat['birthdate']))->y;
+                $oldPatientName = htmlspecialchars($oldPat['last_name'] . ', ' . $oldPat['first_name'] . ($oldPat['suffix'] ? ' ' . $oldPat['suffix'] : '') . " ({$age} yrs, born {$oldPat['birthdate']})");
+            }
         }
     }
 
@@ -113,12 +126,12 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <?php else: ?>
                                 <label for="patient_search_input" class="form-label font-weight-bold mb-1">Select Patient <span class="text-danger">*</span></label>
                                 <div class="position-relative">
-                                    <input type="hidden" name="patient_id" id="patient_id" required>
+                                    <input type="hidden" name="patient_id" id="patient_id" value="<?= old('patient_id') ?>" required>
                                     <div class="input-group">
                                         <span class="input-group-text bg-transparent border-end-0 text-secondary border-color" style="height: 38px;">
                                             <i class="bi bi-search"></i>
                                         </span>
-                                        <input type="text" id="patient_search_input" class="form-control border-start-0 border-color" placeholder="Type patient name to search..." autocomplete="off" style="height: 38px; box-shadow: none;" required>
+                                        <input type="text" id="patient_search_input" class="form-control border-start-0 border-color <?= old('patient_id') ? 'is-valid' : '' ?>" placeholder="Type patient name to search..." value="<?= $oldPatientName ?>" autocomplete="off" style="height: 38px; box-shadow: none;" required>
                                     </div>
                                     <ul id="patientSearchSuggestions" class="dropdown-menu shadow border-0 mt-1 w-100 rounded-3 py-2" style="max-height: 280px; overflow-y: auto; display: none; position: absolute; top: 100%; left: 0; z-index: 1050; border: 1px solid var(--border-color) !important;">
                                     </ul>
@@ -131,9 +144,9 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <div class="col-md-12">
                                 <label for="service_id" class="form-label font-weight-bold mb-1">Service Type Category <span class="text-danger">*</span></label>
                                 <select name="service_id" id="service_id" class="form-select" required>
-                                    <option value="" disabled selected>-- Select Service --</option>
+                                    <option value="" disabled <?= !isset($_SESSION['old_inputs']['service_id']) ? 'selected' : '' ?>>-- Select Service --</option>
                                     <?php foreach ($services as $srv): ?>
-                                        <option value="<?= $srv['service_id'] ?>">
+                                        <option value="<?= $srv['service_id'] ?>" <?= old_select('service_id', $srv['service_id']) ?>>
                                             <?= htmlspecialchars($srv['service_name']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -143,27 +156,27 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <!-- Appointment Date -->
                             <div class="col-md-6">
                                 <label for="appointment_date" class="form-label font-weight-bold mb-1">Appointment Date <span class="text-danger">*</span></label>
-                                <input type="date" name="appointment_date" id="appointment_date" class="form-control" min="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>" required>
+                                <input type="date" name="appointment_date" id="appointment_date" class="form-control" min="<?= date('Y-m-d') ?>" value="<?= old('appointment_date', date('Y-m-d')) ?>" required>
                                 <small class="text-secondary small">Cannot schedule in the past.</small>
                             </div>
 
                             <!-- Appointment Time -->
                             <div class="col-md-6">
                                 <label for="appointment_time" class="form-label font-weight-bold mb-1">Appointment Time</label>
-                                <input type="time" name="appointment_time" id="appointment_time" class="form-control">
+                                <input type="time" name="appointment_time" id="appointment_time" class="form-control" value="<?= old('appointment_time') ?>">
                             </div>
                         </div>
 
                         <!-- Reason -->
                         <div class="mb-4">
                             <label for="reason" class="form-label font-weight-bold mb-1">Reason for Visit <span class="text-danger">*</span></label>
-                            <textarea name="reason" id="reason" class="form-control" rows="3" placeholder="Describe symptoms or purpose of check-up..." required></textarea>
+                            <textarea name="reason" id="reason" class="form-control" rows="3" placeholder="Describe symptoms or purpose of check-up..." required><?= old('reason') ?></textarea>
                         </div>
 
                         <!-- Notes -->
                         <div class="mb-4">
                             <label for="notes" class="form-label font-weight-bold mb-1">Administrative Notes</label>
-                            <textarea name="notes" id="notes" class="form-control" rows="2" placeholder="Any additional information or reminders..."></textarea>
+                            <textarea name="notes" id="notes" class="form-control" rows="2" placeholder="Any additional information or reminders..."><?= old('notes') ?></textarea>
                         </div>
 
                         <hr class="my-4 border-color">

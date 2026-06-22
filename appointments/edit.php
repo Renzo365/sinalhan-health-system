@@ -131,7 +131,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 <label for="service_id" class="form-label font-weight-bold mb-1">Service Type Category <span class="text-danger">*</span></label>
                                 <select name="service_id" id="service_id" class="form-select" required>
                                     <?php foreach ($services as $srv): ?>
-                                        <option value="<?= $srv['service_id'] ?>" <?= $a['service_id'] == $srv['service_id'] ? 'selected' : '' ?>>
+                                        <option value="<?= $srv['service_id'] ?>" <?= old_select('service_id', $srv['service_id'], $a['service_id'] == $srv['service_id']) ?>>
                                             <?= htmlspecialchars($srv['service_name']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -141,23 +141,23 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <!-- Appointment Date -->
                             <div class="col-md-4">
                                 <label for="appointment_date" class="form-label font-weight-bold mb-1">Appointment Date <span class="text-danger">*</span></label>
-                                <input type="date" name="appointment_date" id="appointment_date" class="form-control" value="<?= htmlspecialchars($a['appointment_date']) ?>" min="<?= $minDate ?>" required>
+                                <input type="date" name="appointment_date" id="appointment_date" class="form-control" value="<?= old('appointment_date', $a['appointment_date']) ?>" min="<?= $minDate ?>" required>
                             </div>
 
                             <!-- Appointment Time -->
                             <div class="col-md-4">
                                 <label for="appointment_time" class="form-label font-weight-bold mb-1">Appointment Time</label>
-                                <input type="time" name="appointment_time" id="appointment_time" class="form-control" value="<?= htmlspecialchars($a['appointment_time'] ?? '') ?>">
+                                <input type="time" name="appointment_time" id="appointment_time" class="form-control" value="<?= old('appointment_time', $a['appointment_time'] ?? '') ?>">
                             </div>
 
                             <!-- Appointment Status -->
                             <div class="col-md-4">
                                 <label for="status" class="form-label font-weight-bold mb-1">Status <span class="text-danger">*</span></label>
                                 <select name="status" id="status" class="form-select" required>
-                                    <option value="Scheduled" <?= $a['status'] === 'Scheduled' ? 'selected' : '' ?>>Scheduled</option>
-                                    <option value="Completed" <?= $a['status'] === 'Completed' ? 'selected' : '' ?>>Completed</option>
-                                    <option value="Cancelled" <?= $a['status'] === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
-                                    <option value="No-Show" <?= $a['status'] === 'No-Show' ? 'selected' : '' ?>>No-Show</option>
+                                    <option value="Scheduled" <?= old_select('status', 'Scheduled', $a['status'] === 'Scheduled') ?>>Scheduled</option>
+                                    <option value="Completed" <?= old_select('status', 'Completed', $a['status'] === 'Completed') ?>>Completed</option>
+                                    <option value="Cancelled" <?= old_select('status', 'Cancelled', $a['status'] === 'Cancelled') ?>>Cancelled</option>
+                                    <option value="No-Show" <?= old_select('status', 'No-Show', $a['status'] === 'No-Show') ?>>No-Show</option>
                                 </select>
                             </div>
                         </div>
@@ -165,13 +165,13 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         <!-- Reason -->
                         <div class="mb-4">
                             <label for="reason" class="form-label font-weight-bold mb-1">Reason for Visit <span class="text-danger">*</span></label>
-                            <textarea name="reason" id="reason" class="form-control" rows="3" required><?= htmlspecialchars($a['reason']) ?></textarea>
+                            <textarea name="reason" id="reason" class="form-control" rows="3" required><?= old('reason', $a['reason']) ?></textarea>
                         </div>
 
                         <!-- Notes -->
                         <div class="mb-4">
                             <label for="notes" class="form-label font-weight-bold mb-1">Administrative Notes</label>
-                            <textarea name="notes" id="notes" class="form-control" rows="2" placeholder="Any additional updates..."><?= htmlspecialchars($a['notes'] ?? '') ?></textarea>
+                            <textarea name="notes" id="notes" class="form-control" rows="2" placeholder="Any additional updates..."><?= old('notes', $a['notes'] ?? '') ?></textarea>
                         </div>
 
                         <hr class="my-4 border-color">

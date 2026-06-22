@@ -138,11 +138,13 @@ try {
 
 } catch (Exception $e) {
     error_log("Patient profile update failure: " . $e->getMessage());
+    $_SESSION['old_inputs'] = $_POST;
+    $_SESSION['old_inputs_flash'] = true;
     $_SESSION['alert'] = [
         'type' => 'error',
         'title' => 'Update Failed',
         'message' => $e->getMessage()
     ];
-    header('Location: ' . $_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'patients/list.php'));
+    header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'patients/list.php')));
     if (!defined('TESTING')) exit;
 }

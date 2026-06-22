@@ -47,54 +47,54 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <!-- First Name -->
                     <div class="col-md-4">
                         <label for="first_name" class="form-label font-weight-bold mb-1">First Name <span class="text-danger">*</span></label>
-                        <input type="text" name="first_name" id="first_name" class="form-control check-dup-trigger" placeholder="e.g. Juan" required autocomplete="off">
+                        <input type="text" name="first_name" id="first_name" class="form-control check-dup-trigger" placeholder="e.g. Juan" value="<?= old('first_name') ?>" required autocomplete="off">
                     </div>
                     <!-- Middle Name -->
                     <div class="col-md-3">
                         <label for="middle_name" class="form-label font-weight-bold mb-1">Middle Name</label>
-                        <input type="text" name="middle_name" id="middle_name" class="form-control" placeholder="e.g. Delgado" autocomplete="off">
+                        <input type="text" name="middle_name" id="middle_name" class="form-control" placeholder="e.g. Delgado" value="<?= old('middle_name') ?>" autocomplete="off">
                     </div>
                     <!-- Last Name -->
                     <div class="col-md-3">
                         <label for="last_name" class="form-label font-weight-bold mb-1">Last Name <span class="text-danger">*</span></label>
-                        <input type="text" name="last_name" id="last_name" class="form-control check-dup-trigger" placeholder="e.g. Dela Cruz" required autocomplete="off">
+                        <input type="text" name="last_name" id="last_name" class="form-control check-dup-trigger" placeholder="e.g. Dela Cruz" value="<?= old('last_name') ?>" required autocomplete="off">
                     </div>
                     <!-- Suffix -->
                     <div class="col-md-2">
                         <label for="suffix" class="form-label font-weight-bold mb-1">Suffix</label>
                         <select name="suffix" id="suffix" class="form-select">
-                            <option value="" selected>None</option>
-                            <option value="Jr.">Jr.</option>
-                            <option value="Sr.">Sr.</option>
-                            <option value="II">II</option>
-                            <option value="III">III</option>
-                            <option value="IV">IV</option>
+                            <option value="" <?= old_select('suffix', '') ?>>None</option>
+                            <option value="Jr." <?= old_select('suffix', 'Jr.') ?>>Jr.</option>
+                            <option value="Sr." <?= old_select('suffix', 'Sr.') ?>>Sr.</option>
+                            <option value="II" <?= old_select('suffix', 'II') ?>>II</option>
+                            <option value="III" <?= old_select('suffix', 'III') ?>>III</option>
+                            <option value="IV" <?= old_select('suffix', 'IV') ?>>IV</option>
                         </select>
                     </div>
 
                     <!-- Birthdate -->
                     <div class="col-md-4">
                         <label for="birthdate" class="form-label font-weight-bold mb-1">Birthdate <span class="text-danger">*</span></label>
-                        <input type="date" name="birthdate" id="birthdate" class="form-control check-dup-trigger" required>
+                        <input type="date" name="birthdate" id="birthdate" class="form-control check-dup-trigger" value="<?= old('birthdate') ?>" required>
                     </div>
                     <!-- Sex -->
                     <div class="col-md-4">
                         <label for="sex" class="form-label font-weight-bold mb-1">Sex <span class="text-danger">*</span></label>
                         <select name="sex" id="sex" class="form-select" required>
-                            <option value="" disabled selected>-- Select Sex --</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
+                            <option value="" disabled <?= !isset($_SESSION['old_inputs']['sex']) ? 'selected' : '' ?>>-- Select Sex --</option>
+                            <option value="Male" <?= old_select('sex', 'Male') ?>>Male</option>
+                            <option value="Female" <?= old_select('sex', 'Female') ?>>Female</option>
                         </select>
                     </div>
                     <!-- Civil Status -->
                     <div class="col-md-4">
                         <label for="civil_status" class="form-label font-weight-bold mb-1">Civil Status</label>
                         <select name="civil_status" id="civil_status" class="form-select">
-                            <option value="Single" selected>Single</option>
-                            <option value="Married">Married</option>
-                            <option value="Widowed">Widowed</option>
-                            <option value="Separated">Separated</option>
-                            <option value="Divorced">Divorced</option>
+                            <option value="Single" <?= old_select('civil_status', 'Single', true) ?>>Single</option>
+                            <option value="Married" <?= old_select('civil_status', 'Married') ?>>Married</option>
+                            <option value="Widowed" <?= old_select('civil_status', 'Widowed') ?>>Widowed</option>
+                            <option value="Separated" <?= old_select('civil_status', 'Separated') ?>>Separated</option>
+                            <option value="Divorced" <?= old_select('civil_status', 'Divorced') ?>>Divorced</option>
                         </select>
                     </div>
                 </div>
@@ -105,33 +105,33 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <!-- Contact number -->
                     <div class="col-md-4">
                         <label for="contact_number" class="form-label font-weight-bold mb-1">Contact Number</label>
-                        <input type="text" name="contact_number" id="contact_number" class="form-control" placeholder="e.g. 09123456789">
+                        <input type="text" name="contact_number" id="contact_number" class="form-control" placeholder="e.g. 09123456789" value="<?= old('contact_number') ?>">
                         <small class="text-secondary">Philippine mobile format (e.g. 09123456789)</small>
                     </div>
                     <!-- Purok -->
                     <div class="col-md-4">
                         <label for="purok" class="form-label font-weight-bold mb-1">Purok (Barangay Sinalhan) <span class="text-danger">*</span></label>
                         <select name="purok" id="purok" class="form-select" required>
-                            <option value="" disabled selected>-- Select Purok/Zone --</option>
-                            <option value="Purok 1">Purok 1</option>
-                            <option value="Purok 2">Purok 2</option>
-                            <option value="Purok 3">Purok 3</option>
-                            <option value="Purok 4">Purok 4</option>
-                            <option value="Purok 5">Purok 5</option>
-                            <option value="Purok 6">Purok 6</option>
-                            <option value="Purok 7">Purok 7</option>
-                            <option value="Purok 8">Purok 8</option>
-                            <option value="Purok 9">Purok 9</option>
-                            <option value="Purok 10">Purok 10</option>
-                            <option value="Zone 1">Zone 1</option>
-                            <option value="Zone 2">Zone 2</option>
-                            <option value="Zone 3">Zone 3</option>
+                            <option value="" disabled <?= !isset($_SESSION['old_inputs']['purok']) ? 'selected' : '' ?>>-- Select Purok/Zone --</option>
+                            <option value="Purok 1" <?= old_select('purok', 'Purok 1') ?>>Purok 1</option>
+                            <option value="Purok 2" <?= old_select('purok', 'Purok 2') ?>>Purok 2</option>
+                            <option value="Purok 3" <?= old_select('purok', 'Purok 3') ?>>Purok 3</option>
+                            <option value="Purok 4" <?= old_select('purok', 'Purok 4') ?>>Purok 4</option>
+                            <option value="Purok 5" <?= old_select('purok', 'Purok 5') ?>>Purok 5</option>
+                            <option value="Purok 6" <?= old_select('purok', 'Purok 6') ?>>Purok 6</option>
+                            <option value="Purok 7" <?= old_select('purok', 'Purok 7') ?>>Purok 7</option>
+                            <option value="Purok 8" <?= old_select('purok', 'Purok 8') ?>>Purok 8</option>
+                            <option value="Purok 9" <?= old_select('purok', 'Purok 9') ?>>Purok 9</option>
+                            <option value="Purok 10" <?= old_select('purok', 'Purok 10') ?>>Purok 10</option>
+                            <option value="Zone 1" <?= old_select('purok', 'Zone 1') ?>>Zone 1</option>
+                            <option value="Zone 2" <?= old_select('purok', 'Zone 2') ?>>Zone 2</option>
+                            <option value="Zone 3" <?= old_select('purok', 'Zone 3') ?>>Zone 3</option>
                         </select>
                     </div>
                     <!-- Detailed Address -->
                     <div class="col-md-4">
                         <label for="address" class="form-label font-weight-bold mb-1">Detailed Address</label>
-                        <input type="text" name="address" id="address" class="form-control" placeholder="House #, Street name">
+                        <input type="text" name="address" id="address" class="form-control" placeholder="House #, Street name" value="<?= old('address') ?>">
                     </div>
                 </div>
 
@@ -141,12 +141,12 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <!-- Emergency Name -->
                     <div class="col-md-6">
                         <label for="emergency_contact_name" class="form-label font-weight-bold mb-1">Emergency Contact Full Name</label>
-                        <input type="text" name="emergency_contact_name" id="emergency_contact_name" class="form-control" placeholder="Who to contact in emergency">
+                        <input type="text" name="emergency_contact_name" id="emergency_contact_name" class="form-control" placeholder="Who to contact in emergency" value="<?= old('emergency_contact_name') ?>">
                     </div>
                     <!-- Emergency Number -->
                     <div class="col-md-6">
                         <label for="emergency_contact_number" class="form-label font-weight-bold mb-1">Emergency Contact Number</label>
-                        <input type="text" name="emergency_contact_number" id="emergency_contact_number" class="form-control" placeholder="Contact number">
+                        <input type="text" name="emergency_contact_number" id="emergency_contact_number" class="form-control" placeholder="Contact number" value="<?= old('emergency_contact_number') ?>">
                     </div>
                 </div>
 
@@ -156,12 +156,12 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <!-- Pre-existing conditions -->
                     <div class="col-md-6">
                         <label for="medical_history" class="form-label font-weight-bold mb-1">Pre-existing Medical History</label>
-                        <textarea name="medical_history" id="medical_history" class="form-control" rows="3" placeholder="Hypertension, Asthma, Diabetes, Heart condition..."></textarea>
+                        <textarea name="medical_history" id="medical_history" class="form-control" rows="3" placeholder="Hypertension, Asthma, Diabetes, Heart condition..."><?= old('medical_history') ?></textarea>
                     </div>
                     <!-- Allergies -->
                     <div class="col-md-6">
                         <label for="allergies" class="form-label font-weight-bold mb-1">Known Allergies</label>
-                        <textarea name="allergies" id="allergies" class="form-control" rows="3" placeholder="Penicillin, Seafoods, Dust, Latex..."></textarea>
+                        <textarea name="allergies" id="allergies" class="form-control" rows="3" placeholder="Penicillin, Seafoods, Dust, Latex..."><?= old('allergies') ?></textarea>
                     </div>
                 </div>
 

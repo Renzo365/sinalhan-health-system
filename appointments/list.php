@@ -350,7 +350,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <?php if ($role === 'admin'): ?>
                     <form action="<?= BASE_URL ?>appointments/auto_noshow.php" method="POST" class="m-0" id="bulkNoShowForm">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                        <button type="submit" class="btn btn-sm btn-danger fw-bold px-3 py-2">
+                        <button type="button" class="btn btn-sm btn-danger fw-bold px-3 py-2" id="btnBulkNoShow">
                             <i class="bi bi-calendar-x me-1"></i> Mark All as No-Show
                         </button>
                     </form>
@@ -801,6 +801,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     selectedDateStr = dateStr;
                     renderCalendar(); 
                     filterByDate(dateStr);
+                    if (window.innerWidth < 992) {
+                        const targetElement = document.getElementById('sidePanelTitle');
+                        if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
                 }
             });
 
@@ -1139,10 +1145,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Intercept bulk resolve (No-Show) form submit with SweetAlert2
+    // Intercept bulk resolve (No-Show) button click with SweetAlert2
+    const btnBulkNoShow = document.getElementById('btnBulkNoShow');
     const bulkForm = document.getElementById('bulkNoShowForm');
-    if (bulkForm) {
-        bulkForm.addEventListener('submit', function(e) {
+    if (btnBulkNoShow && bulkForm) {
+        btnBulkNoShow.addEventListener('click', function(e) {
             e.preventDefault();
             Swal.fire({
                 title: 'Mark All as No-Show?',
@@ -1154,6 +1161,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmButtonText: 'Yes, mark as No-Show'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    btnBulkNoShow.disabled = true;
+                    btnBulkNoShow.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
                     bulkForm.submit();
                 }
             });

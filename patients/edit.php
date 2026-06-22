@@ -93,53 +93,53 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <!-- First Name -->
                     <div class="col-md-4">
                         <label for="first_name" class="form-label font-weight-bold mb-1">First Name <span class="text-danger">*</span></label>
-                        <input type="text" name="first_name" id="first_name" class="form-control" value="<?= htmlspecialchars($p['first_name']) ?>" required autocomplete="off">
+                        <input type="text" name="first_name" id="first_name" class="form-control" value="<?= old('first_name', $p['first_name']) ?>" required autocomplete="off">
                     </div>
                     <!-- Middle Name -->
                     <div class="col-md-3">
                         <label for="middle_name" class="form-label font-weight-bold mb-1">Middle Name</label>
-                        <input type="text" name="middle_name" id="middle_name" class="form-control" value="<?= htmlspecialchars($p['middle_name'] ?? '') ?>" autocomplete="off">
+                        <input type="text" name="middle_name" id="middle_name" class="form-control" value="<?= old('middle_name', $p['middle_name'] ?? '') ?>" autocomplete="off">
                     </div>
                     <!-- Last Name -->
                     <div class="col-md-3">
                         <label for="last_name" class="form-label font-weight-bold mb-1">Last Name <span class="text-danger">*</span></label>
-                        <input type="text" name="last_name" id="last_name" class="form-control" value="<?= htmlspecialchars($p['last_name']) ?>" required autocomplete="off">
+                        <input type="text" name="last_name" id="last_name" class="form-control" value="<?= old('last_name', $p['last_name']) ?>" required autocomplete="off">
                     </div>
                     <!-- Suffix -->
                     <div class="col-md-2">
                         <label for="suffix" class="form-label font-weight-bold mb-1">Suffix</label>
                         <select name="suffix" id="suffix" class="form-select">
-                            <option value="" <?= empty($p['suffix']) ? 'selected' : '' ?>>None</option>
-                            <option value="Jr." <?= $p['suffix'] === 'Jr.' ? 'selected' : '' ?>>Jr.</option>
-                            <option value="Sr." <?= $p['suffix'] === 'Sr.' ? 'selected' : '' ?>>Sr.</option>
-                            <option value="II" <?= $p['suffix'] === 'II' ? 'selected' : '' ?>>II</option>
-                            <option value="III" <?= $p['suffix'] === 'III' ? 'selected' : '' ?>>III</option>
-                            <option value="IV" <?= $p['suffix'] === 'IV' ? 'selected' : '' ?>>IV</option>
+                            <option value="" <?= old_select('suffix', '', empty($p['suffix'])) ?>>None</option>
+                            <option value="Jr." <?= old_select('suffix', 'Jr.', $p['suffix'] === 'Jr.') ?>>Jr.</option>
+                            <option value="Sr." <?= old_select('suffix', 'Sr.', $p['suffix'] === 'Sr.') ?>>Sr.</option>
+                            <option value="II" <?= old_select('suffix', 'II', $p['suffix'] === 'II') ?>>II</option>
+                            <option value="III" <?= old_select('suffix', 'III', $p['suffix'] === 'III') ?>>III</option>
+                            <option value="IV" <?= old_select('suffix', 'IV', $p['suffix'] === 'IV') ?>>IV</option>
                         </select>
                     </div>
 
                     <!-- Birthdate -->
                     <div class="col-md-4">
                         <label for="birthdate" class="form-label font-weight-bold mb-1">Birthdate <span class="text-danger">*</span></label>
-                        <input type="date" name="birthdate" id="birthdate" class="form-control" value="<?= $p['birthdate'] ?>" required>
+                        <input type="date" name="birthdate" id="birthdate" class="form-control" value="<?= old('birthdate', $p['birthdate']) ?>" required>
                     </div>
                     <!-- Sex -->
                     <div class="col-md-4">
                         <label for="sex" class="form-label font-weight-bold mb-1">Sex <span class="text-danger">*</span></label>
                         <select name="sex" id="sex" class="form-select" required>
-                            <option value="Male" <?= $p['sex'] === 'Male' ? 'selected' : '' ?>>Male</option>
-                            <option value="Female" <?= $p['sex'] === 'Female' ? 'selected' : '' ?>>Female</option>
+                            <option value="Male" <?= old_select('sex', 'Male', $p['sex'] === 'Male') ?>>Male</option>
+                            <option value="Female" <?= old_select('sex', 'Female', $p['sex'] === 'Female') ?>>Female</option>
                         </select>
                     </div>
                     <!-- Civil Status -->
                     <div class="col-md-4">
                         <label for="civil_status" class="form-label font-weight-bold mb-1">Civil Status</label>
                         <select name="civil_status" id="civil_status" class="form-select">
-                            <option value="Single" <?= $p['civil_status'] === 'Single' ? 'selected' : '' ?>>Single</option>
-                            <option value="Married" <?= $p['civil_status'] === 'Married' ? 'selected' : '' ?>>Married</option>
-                            <option value="Widowed" <?= $p['civil_status'] === 'Widowed' ? 'selected' : '' ?>>Widowed</option>
-                            <option value="Separated" <?= $p['civil_status'] === 'Separated' ? 'selected' : '' ?>>Separated</option>
-                            <option value="Divorced" <?= $p['civil_status'] === 'Divorced' ? 'selected' : '' ?>>Divorced</option>
+                            <option value="Single" <?= old_select('civil_status', 'Single', $p['civil_status'] === 'Single') ?>>Single</option>
+                            <option value="Married" <?= old_select('civil_status', 'Married', $p['civil_status'] === 'Married') ?>>Married</option>
+                            <option value="Widowed" <?= old_select('civil_status', 'Widowed', $p['civil_status'] === 'Widowed') ?>>Widowed</option>
+                            <option value="Separated" <?= old_select('civil_status', 'Separated', $p['civil_status'] === 'Separated') ?>>Separated</option>
+                            <option value="Divorced" <?= old_select('civil_status', 'Divorced', $p['civil_status'] === 'Divorced') ?>>Divorced</option>
                         </select>
                     </div>
                 </div>
@@ -150,32 +150,32 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <!-- Contact number -->
                     <div class="col-md-4">
                         <label for="contact_number" class="form-label font-weight-bold mb-1">Contact Number</label>
-                        <input type="text" name="contact_number" id="contact_number" class="form-control" value="<?= htmlspecialchars($p['contact_number'] ?? '') ?>" placeholder="e.g. 09123456789">
+                        <input type="text" name="contact_number" id="contact_number" class="form-control" value="<?= old('contact_number', $p['contact_number'] ?? '') ?>" placeholder="e.g. 09123456789">
                         <small class="text-secondary">Philippine mobile format (e.g. 09123456789)</small>
                     </div>
                     <!-- Purok -->
                     <div class="col-md-4">
                         <label for="purok" class="form-label font-weight-bold mb-1">Purok (Barangay Sinalhan) <span class="text-danger">*</span></label>
                         <select name="purok" id="purok" class="form-select" required>
-                            <option value="Purok 1" <?= $p['purok'] === 'Purok 1' ? 'selected' : '' ?>>Purok 1</option>
-                            <option value="Purok 2" <?= $p['purok'] === 'Purok 2' ? 'selected' : '' ?>>Purok 2</option>
-                            <option value="Purok 3" <?= $p['purok'] === 'Purok 3' ? 'selected' : '' ?>>Purok 3</option>
-                            <option value="Purok 4" <?= $p['purok'] === 'Purok 4' ? 'selected' : '' ?>>Purok 4</option>
-                            <option value="Purok 5" <?= $p['purok'] === 'Purok 5' ? 'selected' : '' ?>>Purok 5</option>
-                            <option value="Purok 6" <?= $p['purok'] === 'Purok 6' ? 'selected' : '' ?>>Purok 6</option>
-                            <option value="Purok 7" <?= $p['purok'] === 'Purok 7' ? 'selected' : '' ?>>Purok 7</option>
-                            <option value="Purok 8" <?= $p['purok'] === 'Purok 8' ? 'selected' : '' ?>>Purok 8</option>
-                            <option value="Purok 9" <?= $p['purok'] === 'Purok 9' ? 'selected' : '' ?>>Purok 9</option>
-                            <option value="Purok 10" <?= $p['purok'] === 'Purok 10' ? 'selected' : '' ?>>Purok 10</option>
-                            <option value="Zone 1" <?= $p['purok'] === 'Zone 1' ? 'selected' : '' ?>>Zone 1</option>
-                            <option value="Zone 2" <?= $p['purok'] === 'Zone 2' ? 'selected' : '' ?>>Zone 2</option>
-                            <option value="Zone 3" <?= $p['purok'] === 'Zone 3' ? 'selected' : '' ?>>Zone 3</option>
+                            <option value="Purok 1" <?= old_select('purok', 'Purok 1', $p['purok'] === 'Purok 1') ?>>Purok 1</option>
+                            <option value="Purok 2" <?= old_select('purok', 'Purok 2', $p['purok'] === 'Purok 2') ?>>Purok 2</option>
+                            <option value="Purok 3" <?= old_select('purok', 'Purok 3', $p['purok'] === 'Purok 3') ?>>Purok 3</option>
+                            <option value="Purok 4" <?= old_select('purok', 'Purok 4', $p['purok'] === 'Purok 4') ?>>Purok 4</option>
+                            <option value="Purok 5" <?= old_select('purok', 'Purok 5', $p['purok'] === 'Purok 5') ?>>Purok 5</option>
+                            <option value="Purok 6" <?= old_select('purok', 'Purok 6', $p['purok'] === 'Purok 6') ?>>Purok 6</option>
+                            <option value="Purok 7" <?= old_select('purok', 'Purok 7', $p['purok'] === 'Purok 7') ?>>Purok 7</option>
+                            <option value="Purok 8" <?= old_select('purok', 'Purok 8', $p['purok'] === 'Purok 8') ?>>Purok 8</option>
+                            <option value="Purok 9" <?= old_select('purok', 'Purok 9', $p['purok'] === 'Purok 9') ?>>Purok 9</option>
+                            <option value="Purok 10" <?= old_select('purok', 'Purok 10', $p['purok'] === 'Purok 10') ?>>Purok 10</option>
+                            <option value="Zone 1" <?= old_select('purok', 'Zone 1', $p['purok'] === 'Zone 1') ?>>Zone 1</option>
+                            <option value="Zone 2" <?= old_select('purok', 'Zone 2', $p['purok'] === 'Zone 2') ?>>Zone 2</option>
+                            <option value="Zone 3" <?= old_select('purok', 'Zone 3', $p['purok'] === 'Zone 3') ?>>Zone 3</option>
                         </select>
                     </div>
                     <!-- Detailed Address -->
                     <div class="col-md-4">
                         <label for="address" class="form-label font-weight-bold mb-1">Detailed Address</label>
-                        <input type="text" name="address" id="address" class="form-control" value="<?= htmlspecialchars($p['address'] ?? '') ?>" placeholder="House #, Street name">
+                        <input type="text" name="address" id="address" class="form-control" value="<?= old('address', $p['address'] ?? '') ?>" placeholder="House #, Street name">
                     </div>
                 </div>
 
@@ -185,12 +185,12 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <!-- Emergency Name -->
                     <div class="col-md-6">
                         <label for="emergency_contact_name" class="form-label font-weight-bold mb-1">Emergency Contact Full Name</label>
-                        <input type="text" name="emergency_contact_name" id="emergency_contact_name" class="form-control" value="<?= htmlspecialchars($p['emergency_contact_name'] ?? '') ?>" placeholder="Who to contact in emergency">
+                        <input type="text" name="emergency_contact_name" id="emergency_contact_name" class="form-control" value="<?= old('emergency_contact_name', $p['emergency_contact_name'] ?? '') ?>" placeholder="Who to contact in emergency">
                     </div>
                     <!-- Emergency Number -->
                     <div class="col-md-6">
                         <label for="emergency_contact_number" class="form-label font-weight-bold mb-1">Emergency Contact Number</label>
-                        <input type="text" name="emergency_contact_number" id="emergency_contact_number" class="form-control" value="<?= htmlspecialchars($p['emergency_contact_number'] ?? '') ?>" placeholder="Contact number">
+                        <input type="text" name="emergency_contact_number" id="emergency_contact_number" class="form-control" value="<?= old('emergency_contact_number', $p['emergency_contact_number'] ?? '') ?>" placeholder="Contact number">
                     </div>
                 </div>
 
@@ -200,12 +200,12 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <!-- Pre-existing conditions -->
                     <div class="col-md-6">
                         <label for="medical_history" class="form-label font-weight-bold mb-1">Pre-existing Medical History</label>
-                        <textarea name="medical_history" id="medical_history" class="form-control" rows="3" placeholder="Hypertension, Asthma, Diabetes..."><?= htmlspecialchars($p['medical_history'] ?? '') ?></textarea>
+                        <textarea name="medical_history" id="medical_history" class="form-control" rows="3" placeholder="Hypertension, Asthma, Diabetes..."><?= old('medical_history', $p['medical_history'] ?? '') ?></textarea>
                     </div>
                     <!-- Allergies -->
                     <div class="col-md-6">
                         <label for="allergies" class="form-label font-weight-bold mb-1">Known Allergies</label>
-                        <textarea name="allergies" id="allergies" class="form-control" rows="3" placeholder="Penicillin, Seafoods, Dust..."><?= htmlspecialchars($p['allergies'] ?? '') ?></textarea>
+                        <textarea name="allergies" id="allergies" class="form-control" rows="3" placeholder="Penicillin, Seafoods, Dust..."><?= old('allergies', $p['allergies'] ?? '') ?></textarea>
                     </div>
                 </div>
 

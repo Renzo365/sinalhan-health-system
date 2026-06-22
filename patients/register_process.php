@@ -164,11 +164,13 @@ try {
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         exit;
     }
+    $_SESSION['old_inputs'] = $_POST;
+    $_SESSION['old_inputs_flash'] = true;
     $_SESSION['alert'] = [
         'type' => 'error',
         'title' => 'Registration Failed',
         'message' => $e->getMessage()
     ];
-    header('Location: ' . $_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'patients/register.php'));
+    header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'patients/register.php')));
     if (!defined('TESTING')) exit;
 }

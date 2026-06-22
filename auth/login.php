@@ -54,7 +54,7 @@ $clinicNameSetting = get_setting($loginPdo, 'clinic_name', 'Barangay Sinalhan');
         <div class="login-header">
             <?php if (!empty($clinicLogoSetting)): ?>
                 <div class="login-logo" style="overflow: hidden; background: #ffffff; border: 2px solid var(--primary-color);">
-                    <img src="<?= BASE_URL . $clinicLogoSetting ?>" alt="Logo" style="height: 100%; width: 100%; object-fit: contain; padding: 2px;">
+                    <img src="<?= BASE_URL . $clinicLogoSetting ?>" alt="<?= htmlspecialchars($clinicNameSetting) ?> Logo" style="height: 100%; width: 100%; object-fit: contain; padding: 2px;">
                 </div>
             <?php else: ?>
                 <div class="login-logo">

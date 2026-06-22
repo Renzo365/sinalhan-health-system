@@ -154,6 +154,11 @@ require_once __DIR__ . '/../includes/sidebar.php';
         </div>
     </div>
 
+    <!-- Auto-Refresh Progress Bar -->
+    <div class="progress mb-3" style="height: 4px; display: none; background-color: #e9ecef; border-radius: 2px;" id="refreshProgressBarContainer">
+        <div class="progress-bar" role="progressbar" style="width: 100%; background-color: var(--primary-color, #0d7377); transition: width 0.1s linear;" id="refreshProgressBar"></div>
+    </div>
+
     <!-- Kanban Grid Board -->
     <div class="row">
         
@@ -232,6 +237,15 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                     <div class="small text-secondary mb-3"><i class="bi bi-hourglass-split me-1 text-info"></i> In-service for <?= $servingMins ?> minutes</div>
                                     
                                     <div class="d-flex gap-2">
+                                        <!-- Revert action -->
+                                        <form action="<?= BASE_URL ?>queue/manage_process.php" method="POST">
+                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                            <input type="hidden" name="queue_id" value="<?= $t['queue_id'] ?>">
+                                            <input type="hidden" name="action" value="revert">
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm fw-bold" title="Revert to Waiting">
+                                                <i class="bi bi-arrow-left-short"></i>
+                                            </button>
+                                        </form>
                                         <!-- Complete action -->
                                         <form action="<?= BASE_URL ?>queue/manage_process.php" method="POST" class="flex-grow-1">
                                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
@@ -331,12 +345,51 @@ require_once __DIR__ . '/../includes/sidebar.php';
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Auto Refresh board script logic
     const refreshSwitch = document.getElementById('autoRefreshSwitch');
+    const progressBarContainer = document.getElementById('refreshProgressBarContainer');
+    const progressBar = document.getElementById('refreshProgressBar');
     let refreshInterval = null;
+    let progressInterval = null;
+    const REFRESH_TIME = 15000; // 15 seconds
+    const TICK_INTERVAL = 100; // Update every 100ms
+    let timeLeft = REFRESH_TIME;
 
     function startAutoRefresh() {
+        if (progressBarContainer) {
+            progressBarContainer.style.display = 'flex';
+        }
+        timeLeft = REFRESH_TIME;
+        if (progressBar) {
+            progressBar.style.width = '100%';
+        }
+
+        // Interval to refresh page
         refreshInterval = setInterval(function() {
             window.location.reload();
-        }, 15000); // refresh every 15 seconds
+        }, REFRESH_TIME);
+
+        // Interval to update progress bar
+        progressInterval = setInterval(function() {
+            timeLeft -= TICK_INTERVAL;
+            if (timeLeft < 0) timeLeft = 0;
+            const percentage = (timeLeft / REFRESH_TIME) * 100;
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+            }
+        }, TICK_INTERVAL);
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+        if (progressInterval) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+        }
+        if (progressBarContainer) {
+            progressBarContainer.style.display = 'none';
+        }
     }
 
     if (refreshSwitch && refreshSwitch.checked) {
@@ -348,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.checked) {
                 startAutoRefresh();
             } else {
-                clearInterval(refreshInterval);
+                stopAutoRefresh();
             }
         });
     }

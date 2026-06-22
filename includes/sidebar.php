@@ -41,7 +41,7 @@ $currentMenu = $active_menu ?? '';
     <div class="sidebar-header">
         <a href="<?= BASE_URL ?>index.php" class="sidebar-logo">
             <?php if (!empty($clinicLogoSetting)): ?>
-                <img src="<?= BASE_URL . $clinicLogoSetting ?>" alt="Logo" style="height: 30px; width: 30px; object-fit: contain; border-radius: 4px;">
+                <img src="<?= BASE_URL . $clinicLogoSetting ?>" alt="<?= htmlspecialchars($clinicNameSetting) ?> Logo" style="height: 30px; width: 30px; object-fit: contain; border-radius: 4px;">
             <?php else: ?>
                 <i class="bi bi-hospital"></i>
             <?php endif; ?>
@@ -121,7 +121,7 @@ $currentMenu = $active_menu ?? '';
         </li>
         
         <li class="menu-item">
-            <a href="<?= BASE_URL ?>queue/display.php" target="_blank" class="menu-link">
+            <a href="<?= BASE_URL ?>queue/display.php" target="_blank" class="menu-link" aria-label="Queue Monitor (opens in a new tab)">
                 <i class="bi bi-display"></i>
                 <span>Queue Monitor ↗</span>
             </a>

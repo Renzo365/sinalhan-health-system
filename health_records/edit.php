@@ -150,42 +150,42 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <!-- Blood Pressure -->
                             <div class="col-sm-6">
                                 <label for="blood_pressure" class="form-label font-weight-bold mb-1">Blood Pressure</label>
-                                <input type="text" name="blood_pressure" id="blood_pressure" class="form-control" value="<?= htmlspecialchars($r['blood_pressure'] ?? '') ?>" placeholder="e.g. 120/80">
+                                <input type="text" name="blood_pressure" id="blood_pressure" class="form-control" value="<?= old('blood_pressure', $r['blood_pressure'] ?? '') ?>" placeholder="e.g. 120/80">
                                 <small class="text-secondary small">Format: Systolic/Diastolic</small>
                             </div>
                             
                             <!-- Temperature -->
                             <div class="col-sm-6">
                                 <label for="temperature" class="form-label font-weight-bold mb-1">Temperature (°C)</label>
-                                <input type="number" step="0.1" name="temperature" id="temperature" class="form-control" value="<?= $r['temperature'] !== null ? htmlspecialchars($r['temperature']) : '' ?>" placeholder="e.g. 36.5" min="30" max="45">
+                                <input type="number" step="0.1" name="temperature" id="temperature" class="form-control" value="<?= old('temperature', $r['temperature'] !== null ? $r['temperature'] : '') ?>" placeholder="e.g. 36.5" min="30" max="45">
                                 <small class="text-secondary small">Body temperature in Celsius</small>
                             </div>
 
                             <!-- Weight -->
                             <div class="col-sm-6">
                                 <label for="weight_kg" class="form-label font-weight-bold mb-1">Weight (kg)</label>
-                                <input type="number" step="0.1" name="weight_kg" id="weight_kg" class="form-control" value="<?= $r['weight_kg'] !== null ? htmlspecialchars($r['weight_kg']) : '' ?>" placeholder="e.g. 65.2" min="1" max="300">
+                                <input type="number" step="0.1" name="weight_kg" id="weight_kg" class="form-control" value="<?= old('weight_kg', $r['weight_kg'] !== null ? $r['weight_kg'] : '') ?>" placeholder="e.g. 65.2" min="1" max="300">
                                 <small class="text-secondary small">Weight in kilograms</small>
                             </div>
 
                             <!-- Height -->
                             <div class="col-sm-6">
                                 <label for="height_cm" class="form-label font-weight-bold mb-1">Height (cm)</label>
-                                <input type="number" step="0.1" name="height_cm" id="height_cm" class="form-control" value="<?= $r['height_cm'] !== null ? htmlspecialchars($r['height_cm']) : '' ?>" placeholder="e.g. 165.0" min="20" max="250">
+                                <input type="number" step="0.1" name="height_cm" id="height_cm" class="form-control" value="<?= old('height_cm', $r['height_cm'] !== null ? $r['height_cm'] : '') ?>" placeholder="e.g. 165.0" min="20" max="250">
                                 <small class="text-secondary small">Height in centimeters</small>
                             </div>
 
                             <!-- Heart Rate -->
                             <div class="col-sm-6">
                                 <label for="heart_rate" class="form-label font-weight-bold mb-1">Heart Rate (bpm)</label>
-                                <input type="number" name="heart_rate" id="heart_rate" class="form-control" value="<?= $r['heart_rate'] !== null ? htmlspecialchars($r['heart_rate']) : '' ?>" placeholder="e.g. 72" min="20" max="250">
+                                <input type="number" name="heart_rate" id="heart_rate" class="form-control" value="<?= old('heart_rate', $r['heart_rate'] !== null ? $r['heart_rate'] : '') ?>" placeholder="e.g. 72" min="20" max="250">
                                 <small class="text-secondary small">Beats per minute</small>
                             </div>
 
                             <!-- Respiratory Rate -->
                             <div class="col-sm-6">
                                 <label for="respiratory_rate" class="form-label font-weight-bold mb-1">Respiratory Rate</label>
-                                <input type="number" name="respiratory_rate" id="respiratory_rate" class="form-control" value="<?= $r['respiratory_rate'] !== null ? htmlspecialchars($r['respiratory_rate']) : '' ?>" placeholder="e.g. 18" min="5" max="100">
+                                <input type="number" name="respiratory_rate" id="respiratory_rate" class="form-control" value="<?= old('respiratory_rate', $r['respiratory_rate'] !== null ? $r['respiratory_rate'] : '') ?>" placeholder="e.g. 18" min="5" max="100">
                                 <small class="text-secondary small">Breaths per minute</small>
                             </div>
 
@@ -219,7 +219,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 <label for="service_id" class="form-label font-weight-bold mb-1">Service Category <span class="text-danger">*</span></label>
                                 <select name="service_id" id="service_id" class="form-select" required>
                                     <?php foreach ($services as $srv): ?>
-                                        <option value="<?= $srv['service_id'] ?>" <?= $r['service_id'] == $srv['service_id'] ? 'selected' : '' ?>>
+                                        <option value="<?= $srv['service_id'] ?>" <?= old_select('service_id', $srv['service_id'], $r['service_id'] == $srv['service_id']) ?>>
                                             <?= htmlspecialchars($srv['service_name']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -229,7 +229,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <!-- Visit Date -->
                             <div class="col-sm-6">
                                 <label for="visit_date" class="form-label font-weight-bold mb-1">Visit Date <span class="text-danger">*</span></label>
-                                <input type="date" name="visit_date" id="visit_date" class="form-control" value="<?= htmlspecialchars($r['visit_date']) ?>" required>
+                                <input type="date" name="visit_date" id="visit_date" class="form-control" value="<?= old('visit_date', $r['visit_date']) ?>" required>
                             </div>
                         </div>
 
@@ -251,31 +251,31 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         <!-- Chief Complaint -->
                         <div class="mb-3">
                             <label for="chief_complaint" class="form-label font-weight-bold mb-1">Chief Complaint <span class="text-danger">*</span></label>
-                            <textarea name="chief_complaint" id="chief_complaint" class="form-control" rows="3" placeholder="Symptoms reported by patient..." required><?= htmlspecialchars($r['chief_complaint']) ?></textarea>
+                            <textarea name="chief_complaint" id="chief_complaint" class="form-control" rows="3" placeholder="Symptoms reported by patient..." required><?= old('chief_complaint', $r['chief_complaint']) ?></textarea>
                         </div>
 
                         <!-- Diagnosis -->
                         <div class="mb-3">
                             <label for="diagnosis" class="form-label font-weight-bold mb-1">Diagnosis</label>
-                            <textarea name="diagnosis" id="diagnosis" class="form-control" rows="3" placeholder="Clinical assessment FINDINGS..."><?= htmlspecialchars($r['diagnosis'] ?? '') ?></textarea>
+                            <textarea name="diagnosis" id="diagnosis" class="form-control" rows="3" placeholder="Clinical assessment FINDINGS..."><?= old('diagnosis', $r['diagnosis'] ?? '') ?></textarea>
                         </div>
 
                         <!-- Treatment -->
                         <div class="mb-3">
                             <label for="treatment" class="form-label font-weight-bold mb-1">Treatment & Procedures</label>
-                            <textarea name="treatment" id="treatment" class="form-control" rows="3" placeholder="Treatment administered..."><?= htmlspecialchars($r['treatment'] ?? '') ?></textarea>
+                            <textarea name="treatment" id="treatment" class="form-control" rows="3" placeholder="Treatment administered..."><?= old('treatment', $r['treatment'] ?? '') ?></textarea>
                         </div>
 
                         <!-- Prescription -->
                         <div class="mb-3">
                             <label for="prescription" class="form-label font-weight-bold mb-1">Prescription</label>
-                            <textarea name="prescription" id="prescription" class="form-control" rows="3" placeholder="Medications prescribed..."><?= htmlspecialchars($r['prescription'] ?? '') ?></textarea>
+                            <textarea name="prescription" id="prescription" class="form-control" rows="3" placeholder="Medications prescribed..."><?= old('prescription', $r['prescription'] ?? '') ?></textarea>
                         </div>
 
                         <!-- Additional Notes -->
                         <div class="mb-3">
                             <label for="notes" class="form-label font-weight-bold mb-1">Additional Notes</label>
-                            <textarea name="notes" id="notes" class="form-control" rows="2" placeholder="Recommendations/Follow-ups..."><?= htmlspecialchars($r['notes'] ?? '') ?></textarea>
+                            <textarea name="notes" id="notes" class="form-control" rows="2" placeholder="Recommendations/Follow-ups..."><?= old('notes', $r['notes'] ?? '') ?></textarea>
                         </div>
 
                         <hr class="my-4 border-color">

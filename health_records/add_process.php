@@ -202,6 +202,8 @@ try {
         $pdo->rollBack();
     }
     error_log("Health records creation failure: " . $e->getMessage());
+    $_SESSION['old_inputs'] = $_POST;
+    $_SESSION['old_inputs_flash'] = true;
     $_SESSION['alert'] = [
         'type' => 'error',
         'title' => 'Failed to Save Record',

@@ -163,6 +163,8 @@ try {
 
 } catch (Exception $e) {
     error_log("Appointment editing process failure: " . $e->getMessage());
+    $_SESSION['old_inputs'] = $_POST;
+    $_SESSION['old_inputs_flash'] = true;
     $_SESSION['alert'] = [
         'type' => 'error',
         'title' => 'Failed to Update Appointment',

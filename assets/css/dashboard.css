@@ -2,8 +2,10 @@
 
 /* Dashboard Summary Metrics Cards */
 .metric-card {
-    background-color: var(--surface-white);
-    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(13, 115, 119, 0.08);
     border-radius: 12px;
     padding: 24px;
     display: flex;
@@ -11,7 +13,8 @@
     justify-content: space-between;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
     transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow var(--transition-speed) ease;
+                box-shadow var(--transition-speed) ease,
+                border-color var(--transition-speed) ease;
     text-decoration: none;
     color: inherit;
     position: relative;
@@ -32,7 +35,7 @@
 
 .metric-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 25px rgba(13, 115, 119, 0.08);
 }
 
 .metric-card:hover::before {
@@ -40,6 +43,7 @@
 }
 
 .metric-details h3 {
+    font-family: 'Outfit', sans-serif;
     font-size: 13px;
     font-weight: 600;
     color: var(--text-secondary);
@@ -49,6 +53,7 @@
 }
 
 .metric-details .metric-value {
+    font-family: 'Outfit', sans-serif;
     font-size: 28px;
     font-weight: 700;
     color: var(--text-primary);
