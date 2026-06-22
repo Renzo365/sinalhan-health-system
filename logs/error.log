@@ -271,3 +271,5 @@ Stack trace:
 [22-Jun-2026 10:10:12 Asia/Manila] Patient registration failure: Please fill in all required fields marked with an asterisk (*).
 [22-Jun-2026 10:35:27 Asia/Manila] Patient registration failure: Please fill in all required fields marked with an asterisk (*).
 [22-Jun-2026 10:35:56 Asia/Manila] Patient registration failure: Please fill in all required fields marked with an asterisk (*).
+[22-Jun-2026 10:52:31 Asia/Manila] PHP Warning:  The magic method Database::__wakeup() must have public visibility in C:\xampp\htdocs\sinalhan-health-system\config\database.php on line 95
+[22-Jun-2026 22:09:31 Asia/Manila] Patient registration failure: Please fill in all required fields marked with an asterisk (*).

@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/app.php';
 ?>
         <!-- Footer -->
         <footer class="footer-text">
-            <span>&copy; <?= date('Y') ?> <strong><?= APP_NAME ?></strong>. All rights reserved.</span>
+            <span>&copy; 2026 BHC Sinalhan Center. All rights reserved.</span>
         </footer>
     </div> <!-- Close #content-wrapper -->
 </div> <!-- Close #wrapper -->

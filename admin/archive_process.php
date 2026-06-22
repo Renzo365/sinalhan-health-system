@@ -52,14 +52,28 @@ $pdo = Database::getInstance()->getConnection();
 try {
     switch ($type) {
         case 'patient':
-            // Fetch name for detailed audit logging
-            $stmt = $pdo->prepare("SELECT first_name, last_name FROM patients WHERE patient_id = ?");
+            // Fetch name and birthdate for validation and detailed audit logging
+            $stmt = $pdo->prepare("SELECT first_name, last_name, birthdate FROM patients WHERE patient_id = ?");
             $stmt->execute([$recordId]);
             $p = $stmt->fetch();
             if (!$p) {
                 throw new Exception('Patient record not found.');
             }
             $fullName = $p['first_name'] . ' ' . $p['last_name'];
+            $birthdate = $p['birthdate'];
+
+            // Validation: Check if an active record already exists with the same name and birthdate
+            $dupStmt = $pdo->prepare("
+                SELECT COUNT(*) FROM patients 
+                WHERE LOWER(first_name) = LOWER(?) 
+                  AND LOWER(last_name) = LOWER(?) 
+                  AND birthdate = ? 
+                  AND is_archived = 0
+            ");
+            $dupStmt->execute([$p['first_name'], $p['last_name'], $birthdate]);
+            if ((int)$dupStmt->fetchColumn() > 0) {
+                throw new Exception("Cannot restore '{$fullName}' (DOB: " . date('M d, Y', strtotime($birthdate)) . ") because an active duplicate record already exists in the Patient Directory.");
+            }
 
             // Restore patient
             $restoreStmt = $pdo->prepare("UPDATE patients SET is_archived = 0 WHERE patient_id = ?");

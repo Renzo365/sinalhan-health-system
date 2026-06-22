@@ -9,9 +9,10 @@
  * cached assets, or redirect to `offline.php` if an uncached page is requested.
  */
 
-const CACHE_NAME = 'sinalhan-hc-v1';
+const CACHE_NAME = 'sinalhan-hc-v2';
 const ASSETS_TO_CACHE = [
   'offline.php',
+  'patients/register_offline.php',
   'assets/css/style.css',
   'assets/css/dashboard.css',
   'assets/js/main.js',
@@ -82,10 +83,18 @@ self.addEventListener('fetch', (event) => {
       .then((networkResponse) => {
         // If successful, clone response and update cache dynamically
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+          // Guard: Do not cache login pages to avoid caching them as fallback targets when session expires
+          const responseUrl = new URL(networkResponse.url);
+          const isLoginRedirect = responseUrl.pathname.includes('/auth/login.php') || 
+                                  responseUrl.pathname.includes('/auth/login_2fa.php') ||
+                                  responseUrl.pathname.includes('/auth/force_change_password.php');
+          
+          if (!isLoginRedirect && !networkResponse.redirected) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
         }
         return networkResponse;
       })

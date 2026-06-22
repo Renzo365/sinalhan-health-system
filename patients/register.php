@@ -179,6 +179,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const userRole = '<?= $_SESSION['role'] ?? '' ?>';
     const form = document.getElementById('registerPatientForm');
     const dupTriggers = document.querySelectorAll('.check-dup-trigger');
 
@@ -229,13 +230,32 @@ document.addEventListener('DOMContentLoaded', function() {
                         let htmlContent = '';
                         let confirmText = 'Yes, register anyway';
                         let cancelText = 'No, cancel';
+                        let isArchivedMatch = false;
                         
                         if (exactMatch) {
-                            title = 'Duplicate Patient Profile Found!';
-                            htmlContent = `A patient named <strong>${exactMatch.first_name} ${exactMatch.last_name}</strong> with the exact same birthdate (<strong>${exactMatch.birthdate}</strong>) is already registered.<br><br>
-                                           Purok: <strong>${exactMatch.purok || 'N/A'}</strong> | Sex: <strong>${exactMatch.sex}</strong> | Contact: <strong>${exactMatch.contact_number || 'N/A'}</strong><br><br>
-                                           Registering duplicates causes errors in patient medical histories. Are you sure this is a different patient?`;
-                            confirmText = 'Yes, register new';
+                            if (parseInt(exactMatch.is_archived) === 1) {
+                                isArchivedMatch = true;
+                                title = 'Archived Patient Profile Found!';
+                                if (userRole === 'admin') {
+                                    htmlContent = `An archived patient named <strong>${exactMatch.first_name} ${exactMatch.last_name}</strong> with the exact same birthdate (<strong>${exactMatch.birthdate}</strong>) already exists.<br><br>
+                                                   Purok: <strong>${exactMatch.purok || 'N/A'}</strong> | Sex: <strong>${exactMatch.sex}</strong> | Contact: <strong>${exactMatch.contact_number || 'N/A'}</strong><br><br>
+                                                   Would you like to restore this patient's profile instead of creating a new duplicate record?`;
+                                    confirmText = 'Restore Existing Profile';
+                                    cancelText = 'Cancel';
+                                } else {
+                                    htmlContent = `An archived patient named <strong>${exactMatch.first_name} ${exactMatch.last_name}</strong> with the exact same birthdate (<strong>${exactMatch.birthdate}</strong>) already exists.<br><br>
+                                                   Purok: <strong>${exactMatch.purok || 'N/A'}</strong> | Sex: <strong>${exactMatch.sex}</strong><br><br>
+                                                   Please contact an administrator to restore this original profile rather than creating a duplicate.`;
+                                    confirmText = ''; // Hide confirm button for non-admins
+                                    cancelText = 'Close';
+                                }
+                            } else {
+                                title = 'Duplicate Patient Profile Found!';
+                                htmlContent = `A patient named <strong>${exactMatch.first_name} ${exactMatch.last_name}</strong> with the exact same birthdate (<strong>${exactMatch.birthdate}</strong>) is already registered.<br><br>
+                                               Purok: <strong>${exactMatch.purok || 'N/A'}</strong> | Sex: <strong>${exactMatch.sex}</strong> | Contact: <strong>${exactMatch.contact_number || 'N/A'}</strong><br><br>
+                                               Registering duplicates causes errors in patient medical histories. Are you sure this is a different patient?`;
+                                confirmText = 'Yes, register new';
+                            }
                         } else {
                             // Name match but different birthdate
                             const match = response.matches[0];
@@ -246,18 +266,51 @@ document.addEventListener('DOMContentLoaded', function() {
                             confirmText = 'Yes, register anyway';
                         }
 
-                        Swal.fire({
+                        const swalConfig = {
                             title: title,
                             html: htmlContent,
                             icon: 'warning',
                             showCancelButton: true,
-                            confirmButtonColor: '#e74c3c',
                             cancelButtonColor: '#0D7377',
-                            confirmButtonText: confirmText,
                             cancelButtonText: cancelText
-                        }).then((result) => {
+                        };
+
+                        if (confirmText) {
+                            swalConfig.showConfirmButton = true;
+                            swalConfig.confirmButtonColor = isArchivedMatch ? '#2ecc71' : '#e74c3c';
+                            swalConfig.confirmButtonText = confirmText;
+                        } else {
+                            swalConfig.showConfirmButton = false;
+                        }
+
+                        Swal.fire(swalConfig).then((result) => {
                             if (result.isConfirmed) {
-                                document.getElementById('allow_duplicate').value = '1';
+                                if (isArchivedMatch && userRole === 'admin') {
+                                    // Submit restoration POST form dynamically
+                                    const restoreForm = document.createElement('form');
+                                    restoreForm.method = 'POST';
+                                    restoreForm.action = '../admin/archive_process.php';
+
+                                    const fields = {
+                                        action: 'restore',
+                                        type: 'patient',
+                                        record_id: exactMatch.patient_id,
+                                        csrf_token: '<?= $_SESSION['csrf_token'] ?>'
+                                    };
+
+                                    for (const key in fields) {
+                                        const input = document.createElement('input');
+                                        input.type = 'hidden';
+                                        input.name = key;
+                                        input.value = fields[key];
+                                        restoreForm.appendChild(input);
+                                    }
+
+                                    document.body.appendChild(restoreForm);
+                                    restoreForm.submit();
+                                } else {
+                                    document.getElementById('allow_duplicate').value = '1';
+                                }
                             } else {
                                 // Clear input or navigate to search
                                 document.getElementById('first_name').value = '';

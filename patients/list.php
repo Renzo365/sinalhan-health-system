@@ -351,31 +351,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 3. Admin Confirm Archive Dialog
-    const archiveBtnList = document.querySelectorAll('.archive-patient-btn');
-    if (archiveBtnList.length > 0) {
-        archiveBtnList.forEach(button => {
-            button.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                const name = this.getAttribute('data-name');
+    // 3. Admin Confirm Archive Dialog (Delegated for DataTables compatibility)
+    $('#patientsTable').on('click', '.archive-patient-btn', function() {
+        const id = $(this).attr('data-id');
+        const name = $(this).attr('data-name');
 
-                Swal.fire({
-                    title: 'Archive Patient Record?',
-                    text: `You are about to soft-delete the record for '${name}'. Medical history will be archived. An administrator can restore it later.`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#DC3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, archive it'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('archive_patient_id').value = id;
-                        document.getElementById('archivePatientForm').submit();
-                    }
-                });
-            });
+        Swal.fire({
+            title: 'Archive Patient Record?',
+            text: `You are about to soft-delete the record for '${name}'. Medical history will be archived. An administrator can restore it later.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, archive it'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $('#archive_patient_id').val(id);
+                $('#archivePatientForm').submit();
+            }
         });
-    }
+    });
 
     // PWA Offline check for patient list
     // Note: We use DB_NAME = 'SinalhanOfflineDB' and STORE_NAME = 'pending_patients' to match the database in register_offline.php

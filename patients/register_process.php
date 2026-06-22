@@ -110,18 +110,22 @@ try {
         throw new Exception('A patient with this name was registered moments ago. Please wait before submitting again.');
     }
 
-    // Check for exact duplicate if override flag is not set
+    // Check for exact duplicate (active or archived) if override flag is not set
     if ($allowDuplicate !== '1') {
         $checkStmt = $pdo->prepare("
-            SELECT COUNT(*) FROM patients 
+            SELECT is_archived FROM patients 
             WHERE LOWER(first_name) = LOWER(?) 
               AND LOWER(last_name) = LOWER(?) 
-              AND birthdate = ? 
-              AND is_archived = 0
+              AND birthdate = ?
         ");
         $checkStmt->execute([$firstName, $lastName, $birthdate]);
-        if ((int)$checkStmt->fetchColumn() > 0) {
-            throw new Exception("A patient named '{$firstName} {$lastName}' born on {$birthdate} is already registered.");
+        $match = $checkStmt->fetch();
+        if ($match) {
+            if ((int)$match['is_archived'] === 1) {
+                throw new Exception("An archived patient record for '{$firstName} {$lastName}' born on " . date('M d, Y', strtotime($birthdate)) . " already exists. Please ask an administrator to restore the original record.");
+            } else {
+                throw new Exception("A patient named '{$firstName} {$lastName}' born on " . date('M d, Y', strtotime($birthdate)) . " is already registered.");
+            }
         }
     }
 

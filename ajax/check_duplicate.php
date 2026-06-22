@@ -18,13 +18,12 @@ if (empty($firstName) || empty($lastName) || empty($birthdate)) {
 try {
     $pdo = Database::getInstance()->getConnection();
     
-    // Case-insensitive name match check on active records
+    // Case-insensitive name match check on all records (including archived)
     $stmt = $pdo->prepare("
-        SELECT patient_id, first_name, middle_name, last_name, suffix, birthdate, sex, purok, contact_number 
+        SELECT patient_id, first_name, middle_name, last_name, suffix, birthdate, sex, purok, contact_number, is_archived 
         FROM patients 
         WHERE LOWER(first_name) = LOWER(?) 
-          AND LOWER(last_name) = LOWER(?) 
-          AND is_archived = 0
+          AND LOWER(last_name) = LOWER(?)
     ");
     $stmt->execute([$firstName, $lastName]);
     $duplicates = $stmt->fetchAll();

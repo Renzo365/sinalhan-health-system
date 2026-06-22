@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     localNotifications[localIdx].is_read = true;
                     // Trigger redirect if click is offline sync
                     if (localNotifications[localIdx].title.includes('Pending Sync') || localNotifications[localIdx].title.includes('Offline')) {
-                        window.location.href = '<?= BASE_URL ?>patients/list.php';
+                        window.location.href = '<?= BASE_URL ?>patients/register_offline.php';
                         return;
                     }
                     loadNotifications();

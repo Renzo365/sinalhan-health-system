@@ -32,15 +32,15 @@ class TOTP {
     }
 
     /**
-     * Generates a 16-character random base32 secret key.
+     * Generates a 16-character random base32 secret key using CSPRNG.
      */
-    public static function generateSecret() {
-        $secret = '';
-        for ($i = 0; $i < 16; $i++) {
-            $secret .= self::$base32Chars[rand(0, 31)];
-        }
-        return $secret;
-    }
+     public static function generateSecret() {
+         $secret = '';
+         for ($i = 0; $i < 16; $i++) {
+             $secret .= self::$base32Chars[random_int(0, 31)];
+         }
+         return $secret;
+     }
 
     /**
      * Calculates the 6-digit TOTP code for a secret at a specific time step.

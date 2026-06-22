@@ -34,6 +34,14 @@ if (php_sapi_name() !== 'cli') {
         session_start();
     }
 
+    // 4.5. Periodic Session ID Rotation (mitigates active session hijacking)
+    if (!isset($_SESSION['session_created_time'])) {
+        $_SESSION['session_created_time'] = time();
+    } elseif (time() - $_SESSION['session_created_time'] > 900) { // Rotate every 15 minutes
+        session_regenerate_id(true);
+        $_SESSION['session_created_time'] = time();
+    }
+
     // 5. Inactivity Session Timeout Guard
     if (isset($_SESSION['last_activity'])) {
         // Calculate total idle seconds

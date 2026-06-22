@@ -189,6 +189,9 @@ require_once __DIR__ . '/../includes/sidebar.php';
 </main>
 
 <script>
+// Global CSRF Token variable (refreshed dynamically on sync)
+let currentCsrfToken = '<?= $_SESSION['csrf_token'] ?? '' ?>';
+
 // 1. IndexedDB Initialization
 // Note: We use DB_NAME = 'SinalhanOfflineDB' and STORE_NAME = 'pending_patients' to match the central settings manager inspector and top notifications bar.
 const DB_NAME = 'SinalhanOfflineDB';
@@ -244,6 +247,33 @@ function updatePendingBadge() {
 // Listen to online status changes
 window.addEventListener('online', function() {
     document.getElementById('sync-btn').disabled = false;
+    
+    // Auto-prompt sync when connection is restored and records exist
+    if (db) {
+        const transaction = db.transaction([STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const countRequest = store.count();
+        
+        countRequest.onsuccess = function() {
+            const count = countRequest.result;
+            if (count > 0) {
+                Swal.fire({
+                    title: 'Connection Restored',
+                    text: `Your network connection was restored. You have ${count} pending patient record(s) stored locally. Would you like to synchronize them now?`,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0D7377',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Sync Now',
+                    cancelButtonText: 'Later'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        syncOfflineData();
+                    }
+                });
+            }
+        };
+    }
 });
 window.addEventListener('offline', function() {
     document.getElementById('sync-btn').disabled = true;
@@ -364,6 +394,45 @@ function syncOfflineData() {
         return;
     }
 
+    // Show verification spinner while fetching fresh CSRF token
+    Swal.fire({
+        title: 'Verifying Session...',
+        text: 'Refreshing security credentials...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // Dynamic CSRF Retrieval check to prevent trapped offline data on session expiration
+    $.ajax({
+        url: '../ajax/get_csrf_token.php',
+        method: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if (response && response.success && response.csrf_token) {
+                currentCsrfToken = response.csrf_token;
+                showSyncConfirmation();
+            } else {
+                handleSessionExpired();
+            }
+        },
+        error: function(xhr) {
+            if (xhr.status === 401) {
+                handleSessionExpired();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Connection Error',
+                    text: 'Unable to verify server session status. Please try again.',
+                    confirmButtonColor: '#0D7377'
+                });
+            }
+        }
+    });
+}
+
+function showSyncConfirmation() {
     Swal.fire({
         title: 'Synchronize Data?',
         text: 'This will upload all locally stored patient registrations to the server.',
@@ -406,6 +475,23 @@ function syncOfflineData() {
     });
 }
 
+function handleSessionExpired() {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Session Expired',
+        text: 'Your clinic session has expired. You must log in again to sync records.',
+        showCancelButton: true,
+        confirmButtonColor: '#0D7377',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Log In Now',
+        cancelButtonText: 'Keep Offline'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '../auth/login.php';
+        }
+    });
+}
+
 function uploadBatch(records, index) {
     if (index >= records.length) {
         Swal.fire({
@@ -425,7 +511,7 @@ function uploadBatch(records, index) {
         url: 'register_process.php',
         method: 'POST',
         data: {
-            csrf_token: '<?= $_SESSION['csrf_token'] ?>', // Inject current session CSRF
+            csrf_token: currentCsrfToken, // Inject refreshed session CSRF
             first_name: rec.first_name,
             middle_name: rec.middle_name,
             last_name: rec.last_name,
@@ -472,7 +558,7 @@ function uploadBatch(records, index) {
             }
         },
         error: function(xhr, status, error) {
-            console.error(`Sync error on record index ${index}:`, error);
+            console.error("Sync error on record index " + index + ":", error);
             Swal.fire({
                 icon: 'error',
                 title: 'Sync Interrupted',

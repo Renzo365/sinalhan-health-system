@@ -90,8 +90,10 @@ class Database {
     /**
      * Prevent Unserialization
      * 
-     * Restricting wakeup method prevents restoring a duplicate database class instance from serialized data.
+     * Restricting wakeup method prevents restoring a duplicate database class instance.
      */
-    public function __wakeup() {}
+    public function __wakeup() {
+        throw new \Exception("Cannot unserialize a singleton instance.");
+    }
 }
 

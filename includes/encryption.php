@@ -11,8 +11,8 @@
  */
 
 /**
- * Encrypts cleartext using AES-256-CBC.
- * Output format: enc::[base64_iv]::[base64_ciphertext]
+ * Encrypts cleartext using AES-256-CBC with HMAC.
+ * Output format: enc::[base64_iv]::[base64_ciphertext]::[base64_hmac]
  * 
  * @param string|null $plaintext Raw readable text to encrypt
  * @return string The formatted encrypted string, or the raw input if empty/failed
@@ -44,14 +44,18 @@ function encrypt_data($plaintext) {
         return $plaintext; 
     }
 
+    // Generate HMAC-SHA256 signature to verify integrity (prevent padding/bit-flipping attacks)
+    $hmac = hash_hmac('sha256', $ciphertext_raw, $key, true);
+
     // Return the cipher tagged with 'enc::' and delimited with '::' for easy verification and decoding
-    return 'enc::' . base64_encode($iv) . '::' . base64_encode($ciphertext_raw);
+    return 'enc::' . base64_encode($iv) . '::' . base64_encode($ciphertext_raw) . '::' . base64_encode($hmac);
 }
 
 /**
  * Decrypts a formatted ciphertext string.
- * Supports transparent fallback: if the string is not encrypted (does not begin with 'enc::'),
- * or if decryption fails due to key mismatch, it returns the raw input string.
+ * Supports transparent legacy fallback: if the string is not encrypted,
+ * or is in the old 3-part format, it will decrypt without HMAC verification.
+ * If the 4-part format is detected, it verifies the HMAC signature first.
  * 
  * @param string|null $ciphertext The encrypted string, or raw legacy string
  * @return string Decrypted plaintext, or raw input on failure
@@ -68,9 +72,11 @@ function decrypt_data($ciphertext) {
         return $ciphertext; 
     }
 
-    // Parse the format: enc::[iv]::[ciphertext]
+    // Parse the format: enc::[iv]::[ciphertext] or enc::[iv]::[ciphertext]::[hmac]
     $parts = explode('::', $ciphertext);
-    if (count($parts) !== 3) {
+    $count = count($parts);
+
+    if ($count !== 3 && $count !== 4) {
         // If the format is invalid or corrupted, return the raw input to prevent data loss
         return $ciphertext; 
     }
@@ -84,6 +90,17 @@ function decrypt_data($ciphertext) {
     $key = substr(hash('sha256', $key, true), 0, 32);
 
     $cipher = 'aes-256-cbc';
+
+    // If 4-part format is detected, verify the HMAC signature first (mitigates padding oracle / manipulation)
+    if ($count === 4) {
+        $expected_hmac = base64_decode($parts[3]);
+        $calculated_hmac = hash_hmac('sha256', $ciphertext_raw, $key, true);
+
+        if (!hash_equals($calculated_hmac, $expected_hmac)) {
+            error_log("Decryption failed: HMAC signature verification failed (data manipulation suspected).");
+            return $ciphertext; // Fallback to raw ciphertext to prevent processing manipulated data
+        }
+    }
     
     // Decrypt using OpenSSL
     $plaintext = openssl_decrypt($ciphertext_raw, $cipher, $key, OPENSSL_RAW_DATA, $iv);
