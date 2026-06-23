@@ -101,8 +101,8 @@ try {
     // Idempotency Guard: Prevent double-click submissions within a 30-second window
     $recentStmt = $pdo->prepare("
         SELECT 1 FROM patients 
-        WHERE LOWER(first_name) = LOWER(?) 
-          AND LOWER(last_name) = LOWER(?) 
+        WHERE first_name = ? 
+          AND last_name = ? 
           AND created_at >= DATE_SUB(NOW(), INTERVAL 30 SECOND)
     ");
     $recentStmt->execute([$firstName, $lastName]);
@@ -114,8 +114,8 @@ try {
     if ($allowDuplicate !== '1') {
         $checkStmt = $pdo->prepare("
             SELECT is_archived FROM patients 
-            WHERE LOWER(first_name) = LOWER(?) 
-              AND LOWER(last_name) = LOWER(?) 
+            WHERE first_name = ? 
+              AND last_name = ? 
               AND birthdate = ?
         ");
         $checkStmt->execute([$firstName, $lastName, $birthdate]);

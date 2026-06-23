@@ -22,8 +22,8 @@ try {
     $stmt = $pdo->prepare("
         SELECT patient_id, first_name, middle_name, last_name, suffix, birthdate, sex, purok, contact_number, is_archived 
         FROM patients 
-        WHERE LOWER(first_name) = LOWER(?) 
-          AND LOWER(last_name) = LOWER(?)
+        WHERE first_name = ? 
+          AND last_name = ?
     ");
     $stmt->execute([$firstName, $lastName]);
     $duplicates = $stmt->fetchAll();

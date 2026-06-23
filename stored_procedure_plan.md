@@ -205,10 +205,11 @@ BEGIN
         SET v_prefix = 'Q';
     END IF;
 
-    -- 3. Calculate next sequential ticket number under a table lock (for concurrency safety)
+    -- 3. Calculate next sequential ticket number under row lock (for concurrency safety)
     SELECT COALESCE(MAX(queue_number), 0) + 1 INTO v_next_num
-    FROM queue WITH (XLOCK, ROWLOCK)
-    WHERE queue_date = v_today;
+    FROM queue
+    WHERE queue_date = v_today
+    FOR UPDATE;
 
     -- 4. Insert queue ticket
     INSERT INTO queue (patient_id, service_id, queue_date, queue_number, status, assigned_by)

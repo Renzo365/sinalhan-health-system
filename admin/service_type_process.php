@@ -46,8 +46,7 @@ try {
                 throw new Exception('Service category name is required.');
             }
 
-            // Check if service name already exists
-            $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM service_types WHERE LOWER(service_name) = LOWER(?)");
+            $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM service_types WHERE service_name = ?");
             $checkStmt->execute([$serviceName]);
             if ($checkStmt->fetchColumn() > 0) {
                 throw new Exception("Service category '{$serviceName}' already exists.");
@@ -96,7 +95,7 @@ try {
 
             // Check uniqueness of name if changed
             if (strtolower($currentService) !== strtolower($serviceName)) {
-                $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM service_types WHERE LOWER(service_name) = LOWER(?) AND service_id != ?");
+                $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM service_types WHERE service_name = ? AND service_id != ?");
                 $checkStmt->execute([$serviceName, $serviceId]);
                 if ($checkStmt->fetchColumn() > 0) {
                     throw new Exception("Service category name '{$serviceName}' is already taken.");

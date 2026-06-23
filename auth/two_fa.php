@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/auth_guard.php';
 require_once __DIR__ . '/../includes/role_guard.php';
 require_once __DIR__ . '/../includes/totp.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/encryption.php';
 
 require_role(['admin', 'staff', 'bhw']);
 
@@ -36,7 +37,7 @@ try {
         $_SESSION['temp_2fa_secret'] = TOTP::generateSecret();
     }
     
-    $secret = $is2faEnabled ? $user['two_fa_secret'] : $_SESSION['temp_2fa_secret'];
+    $secret = $is2faEnabled ? decrypt_data($user['two_fa_secret']) : $_SESSION['temp_2fa_secret'];
     $qrData = TOTP::getQRUrl($user['username'], $secret);
     // $qrUrl is deprecated. QR Code is now generated client-side using local qrious.min.js library for Offline-First compliance.
 

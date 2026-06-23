@@ -6,6 +6,7 @@ require_once __DIR__ . '/../includes/role_guard.php';
 require_once __DIR__ . '/../includes/totp.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/log_activity.php';
+require_once __DIR__ . '/../includes/encryption.php';
 
 require_role(['admin', 'staff', 'bhw']);
 
@@ -61,9 +62,10 @@ try {
 
         // Verify the code
         if (TOTP::verifyCode($secret, $code)) {
-            // Save to database
+            // Save encrypted secret to database
+            $encryptedSecret = encrypt_data($secret);
             $updateStmt = $pdo->prepare("UPDATE users SET two_fa_secret = ?, two_fa_enabled = 1 WHERE user_id = ?");
-            $updateStmt->execute([$secret, $userId]);
+            $updateStmt->execute([$encryptedSecret, $userId]);
 
             unset($_SESSION['temp_2fa_secret']);
             log_activity($pdo, "Enabled Two-Factor Authentication", 'Auth', $userId);
@@ -85,7 +87,7 @@ try {
             throw new Exception('Two-factor authentication is not active on this account.');
         }
 
-        $secret = $user['two_fa_secret'];
+        $secret = decrypt_data($user['two_fa_secret']);
 
         // Verify the code
         if (TOTP::verifyCode($secret, $code)) {

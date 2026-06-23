@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS patients (
     INDEX idx_purok (purok),
     INDEX idx_birthdate (birthdate),
     INDEX idx_is_archived (is_archived),
+    INDEX idx_created_at (created_at),
     CONSTRAINT fk_patients_registered_by 
         FOREIGN KEY (registered_by) REFERENCES users(user_id) 
         ON DELETE SET NULL ON UPDATE CASCADE
@@ -162,6 +163,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     INDEX idx_service_id (service_id),
     INDEX idx_is_archived (is_archived),
     INDEX idx_app_datetime (appointment_date, appointment_time),
+    INDEX idx_created_at (created_at),
     CONSTRAINT fk_appointments_patient 
         FOREIGN KEY (patient_id) REFERENCES patients(patient_id) 
         ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -194,6 +196,7 @@ CREATE TABLE IF NOT EXISTS queue (
     INDEX idx_queue_number (queue_date, queue_number),
     INDEX idx_patient_id (patient_id),
     INDEX idx_is_archived (is_archived),
+    INDEX idx_created_at (created_at),
     CONSTRAINT fk_queue_patient 
         FOREIGN KEY (patient_id) REFERENCES patients(patient_id) 
         ON DELETE RESTRICT ON UPDATE CASCADE,

@@ -4,6 +4,7 @@ require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/totp.php';
 require_once __DIR__ . '/../includes/log_activity.php';
+require_once __DIR__ . '/../includes/encryption.php';
 
 // Check if request is POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -72,7 +73,8 @@ try {
     }
 
     // 3. Verify TOTP Code
-    if (TOTP::verifyCode($user['two_fa_secret'], $code)) {
+    $decryptedSecret = decrypt_data($user['two_fa_secret']);
+    if (TOTP::verifyCode($decryptedSecret, $code)) {
         // Success: Clear failed attempts on successful login
         $clearAttemptsStmt = $pdo->prepare("DELETE FROM login_attempts WHERE ip_address = ? AND username = ?");
         $clearAttemptsStmt->execute([$ipAddress, $username]);

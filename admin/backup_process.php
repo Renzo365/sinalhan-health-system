@@ -39,16 +39,33 @@ try {
         $tables[] = $row[0];
     }
     
-    $sql = "-- Barangay Sinalhan Patient Management System Database Backup\n";
-    $sql .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
-    $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+    // Log backup activity (do this before sending output in case it fails)
+    log_activity($pdo, "Database manual backup performed", "System", null, "Generated SQL file of all tables");
+    
+    // Set streaming headers
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename="sinalhan_db_backup_' . date('Ymd_His') . '.sql"');
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    
+    // Turn off output buffering if active
+    while (ob_get_level() > 0) {
+        ob_end_flush();
+    }
+    
+    echo "-- Barangay Sinalhan Patient Management System Database Backup\n";
+    echo "-- Generated: " . date('Y-m-d H:i:s') . "\n";
+    echo "SET FOREIGN_KEY_CHECKS=0;\n\n";
+    flush();
     
     foreach ($tables as $table) {
         // Table schema
         $schemaStmt = $pdo->query("SHOW CREATE TABLE `{$table}`");
         $schema = $schemaStmt->fetch(PDO::FETCH_NUM);
-        $sql .= "DROP TABLE IF EXISTS `{$table}`;\n";
-        $sql .= $schema[1] . ";\n\n";
+        echo "DROP TABLE IF EXISTS `{$table}`;\n";
+        echo $schema[1] . ";\n\n";
+        flush();
         
         // Table data
         $dataStmt = $pdo->query("SELECT * FROM `{$table}`");
@@ -61,29 +78,28 @@ try {
                 return $pdo->quote($val);
             }, $values);
             
-            $sql .= "INSERT INTO `{$table}` (`" . implode("`, `", $keys) . "`) VALUES (" . implode(", ", $escapedValues) . ");\n";
+            echo "INSERT INTO `{$table}` (`" . implode("`, `", $keys) . "`) VALUES (" . implode(", ", $escapedValues) . ");\n";
         }
-        $sql .= "\n";
+        echo "\n";
+        flush();
     }
     
-    $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
-    
-    // Log backup activity
-    log_activity($pdo, "Database manual backup performed", "System", null, "Generated SQL file of all tables");
-    
-    header('Content-Type: application/octet-stream');
-    header('Content-Disposition: attachment; filename="sinalhan_db_backup_' . date('Ymd_His') . '.sql"');
-    header('Content-Length: ' . strlen($sql));
-    echo $sql;
+    echo "SET FOREIGN_KEY_CHECKS=1;\n";
+    flush();
     if (!defined('TESTING')) exit;
     
 } catch (Exception $e) {
     error_log("Database backup error: " . $e->getMessage());
-    $_SESSION['alert'] = [
-        'type' => 'error',
-        'title' => 'Backup Failed',
-        'message' => $e->getMessage()
-    ];
-    header('Location: ' . BASE_URL . 'admin/settings.php');
+    if (headers_sent()) {
+        echo "\n-- ERROR: Backup failed during table streaming.\n";
+        echo "-- Details: " . $e->getMessage() . "\n";
+    } else {
+        $_SESSION['alert'] = [
+            'type' => 'error',
+            'title' => 'Backup Failed',
+            'message' => $e->getMessage()
+        ];
+        header('Location: ' . BASE_URL . 'admin/settings.php');
+    }
     if (!defined('TESTING')) exit;
 }

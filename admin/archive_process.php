@@ -65,8 +65,8 @@ try {
             // Validation: Check if an active record already exists with the same name and birthdate
             $dupStmt = $pdo->prepare("
                 SELECT COUNT(*) FROM patients 
-                WHERE LOWER(first_name) = LOWER(?) 
-                  AND LOWER(last_name) = LOWER(?) 
+                WHERE first_name = ? 
+                  AND last_name = ? 
                   AND birthdate = ? 
                   AND is_archived = 0
             ");
