@@ -331,3 +331,5 @@ Stack trace:
 [23-Jun-2026 22:39:02 Asia/Manila] Patient registration failure: A patient named 'Duplicate User' born on Oct 10, 1990 is already registered.
 [23-Jun-2026 22:39:02 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
 [23-Jun-2026 22:39:02 Asia/Manila] Decryption failed: HMAC signature verification failed (data manipulation suspected).
+[23-Jun-2026 22:49:11 Asia/Manila] Database connection failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
+[23-Jun-2026 22:49:25 Asia/Manila] Database connection failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
