@@ -179,6 +179,33 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Redirect immediately if loaded while offline
+    if (!navigator.onLine) {
+        window.location.replace('register_offline.php');
+        return;
+    }
+
+    // IndexedDB constants matching register_offline.php
+    const DB_NAME = 'SinalhanOfflineDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'pending_patients';
+    let db = null;
+
+    // Open/create the client-side IndexedDB database inside the browser
+    const dbRequest = indexedDB.open(DB_NAME, DB_VERSION);
+    dbRequest.onerror = function(event) {
+        console.error('IndexedDB open error:', event.target.errorCode);
+    };
+    dbRequest.onsuccess = function(event) {
+        db = event.target.result;
+    };
+    dbRequest.onupgradeneeded = function(event) {
+        const upgradeDb = event.target.result;
+        if (!upgradeDb.objectStoreNames.contains(STORE_NAME)) {
+            upgradeDb.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        }
+    };
+
     const userRole = '<?= $_SESSION['role'] ?? '' ?>';
     const form = document.getElementById('registerPatientForm');
     const dupTriggers = document.querySelectorAll('.check-dup-trigger');
@@ -332,6 +359,78 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function saveOfflinePatient() {
+        const first = document.getElementById('first_name').value.trim();
+        const last = document.getElementById('last_name').value.trim();
+        const bdateVal = document.getElementById('birthdate').value;
+        const purok = document.getElementById('purok').value;
+        const contact = document.getElementById('contact_number').value.trim();
+        const emergencyContact = document.getElementById('emergency_contact_number').value.trim();
+
+        if (!first || !last || !bdateVal || !purok) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Required Fields',
+                text: 'Please complete all required demographic fields.',
+                confirmButtonColor: '#0D7377'
+            });
+            return;
+        }
+
+        const patientPayload = {
+            first_name: first,
+            middle_name: document.getElementById('middle_name').value.trim(),
+            last_name: last,
+            suffix: document.getElementById('suffix').value,
+            birthdate: bdateVal,
+            sex: document.getElementById('sex').value,
+            civil_status: document.getElementById('civil_status').value,
+            contact_number: contact,
+            purok: purok,
+            address: document.getElementById('address').value.trim(),
+            emergency_contact_name: document.getElementById('emergency_contact_name').value.trim(),
+            emergency_contact_number: emergencyContact,
+            medical_history: document.getElementById('medical_history').value.trim(),
+            allergies: document.getElementById('allergies').value.trim(),
+            timestamp: new Date().toISOString()
+        };
+
+        if (!db) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Save Failed',
+                text: 'Local storage database is not initialized yet. Please try again.',
+                confirmButtonColor: '#0D7377'
+            });
+            return;
+        }
+
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const addRequest = store.add(patientPayload);
+
+        addRequest.onsuccess = function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Saved Locally (Offline Mode)',
+                text: 'Your device is offline. The record has been saved locally on this device. You can synchronize it when connection is restored.',
+                confirmButtonColor: '#0D7377'
+            }).then(() => {
+                form.reset();
+                window.location.href = 'list.php';
+            });
+        };
+
+        addRequest.onerror = function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Save Failed',
+                text: 'An error occurred while saving the record to local database.',
+                confirmButtonColor: '#0D7377'
+            });
+        };
+    }
+
     // 2. Validate phone number and birthdate on submit
     form.addEventListener('submit', function(e) {
         const bdate = new Date(document.getElementById('birthdate').value);
@@ -371,6 +470,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 text: 'Please enter a valid Philippine mobile number format for the emergency contact.',
                 confirmButtonColor: '#0D7377'
             });
+            return;
+        }
+
+        // Check if offline and save to IndexedDB as fallback
+        if (!navigator.onLine) {
+            e.preventDefault();
+            saveOfflinePatient();
         }
     });
 });

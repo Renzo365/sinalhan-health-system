@@ -55,20 +55,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Frontend Idempotency Defense: Prevent Double Form Submissions
     document.querySelectorAll('form').forEach(function(form) {
         form.addEventListener('submit', function() {
-            // Find all submit buttons within the form
-            const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
-            submitButtons.forEach(function(button) {
-                // Disable the button to prevent double-clicks
-                button.disabled = true;
-                // Add a visual indicator if it's a button element
-                if (button.tagName.toLowerCase() === 'button') {
-                    // Save original content in dataset if not already saved
-                    if (!button.dataset.originalText) {
-                        button.dataset.originalText = button.innerHTML;
+            // Let HTML5 validation handle invalid states first
+            if (form.classList.contains('needs-validation') && !form.checkValidity()) {
+                return;
+            }
+            
+            // Only disable submit buttons if online, or if it is the dedicated offline registration form
+            if (navigator.onLine || form.id === 'offlinePatientForm') {
+                const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+                submitButtons.forEach(function(button) {
+                    // Disable the button to prevent double-clicks
+                    button.disabled = true;
+                    // Add a visual indicator if it's a button element
+                    if (button.tagName.toLowerCase() === 'button') {
+                        // Save original content in dataset if not already saved
+                        if (!button.dataset.originalText) {
+                            button.dataset.originalText = button.innerHTML;
+                        }
+                        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
                     }
-                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
-                }
-            });
+                });
+            }
         });
+    });
+
+    // Listen to network connectivity status changes globally
+    window.addEventListener('online', function() {
+        showToast('success', 'Internet connection restored. Ready to synchronize pending changes.');
+    });
+
+    window.addEventListener('offline', function() {
+        showToast('warning', 'You are currently offline. Changes will be saved locally on this device.');
     });
 });
