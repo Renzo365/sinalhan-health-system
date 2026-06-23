@@ -161,6 +161,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     INDEX idx_status (status),
     INDEX idx_service_id (service_id),
     INDEX idx_is_archived (is_archived),
+    INDEX idx_app_datetime (appointment_date, appointment_time),
     CONSTRAINT fk_appointments_patient 
         FOREIGN KEY (patient_id) REFERENCES patients(patient_id) 
         ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -222,6 +223,8 @@ CREATE TABLE IF NOT EXISTS activity_log (
     INDEX idx_module (module),
     INDEX idx_created_at (created_at),
     INDEX idx_record_id (record_id),
+    INDEX idx_log_module_date (module, created_at DESC),
+    INDEX idx_log_user_date (user_id, created_at DESC),
     CONSTRAINT fk_activity_log_user 
         FOREIGN KEY (user_id) REFERENCES users(user_id) 
         ON DELETE SET NULL ON UPDATE CASCADE
@@ -251,6 +254,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user_id (user_id),
     INDEX idx_is_read (is_read),
+    INDEX idx_user_unread (user_id, is_read, created_at DESC),
     CONSTRAINT fk_notifications_user 
         FOREIGN KEY (user_id) REFERENCES users(user_id) 
         ON DELETE CASCADE ON UPDATE CASCADE

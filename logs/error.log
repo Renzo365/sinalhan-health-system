@@ -289,3 +289,11 @@ Stack trace:
 [22-Jun-2026 23:15:54 Asia/Manila] Patient registration failure: A patient named 'Duplicate User' born on Oct 10, 1990 is already registered.
 [22-Jun-2026 23:15:54 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
 [22-Jun-2026 23:15:54 Asia/Manila] Decryption failed: HMAC signature verification failed (data manipulation suspected).
+[23-Jun-2026 21:47:27 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 177
+[23-Jun-2026 21:47:27 Asia/Manila] Patient registration failure: First name can only contain letters, spaces, hyphens, and periods.
+[23-Jun-2026 21:47:27 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[23-Jun-2026 21:47:27 Asia/Manila] Patient registration failure: Birthdate cannot be a future date.
+[23-Jun-2026 21:47:27 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[23-Jun-2026 21:47:27 Asia/Manila] Patient registration failure: A patient named 'Duplicate User' born on Oct 10, 1990 is already registered.
+[23-Jun-2026 21:47:27 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[23-Jun-2026 21:47:27 Asia/Manila] Decryption failed: HMAC signature verification failed (data manipulation suspected).

@@ -25,11 +25,11 @@ try {
             FROM patients 
             WHERE is_archived = 0 
               AND (
-                LOWER(first_name) LIKE LOWER(?) 
-                OR LOWER(last_name) LIKE LOWER(?)
-                OR LOWER(middle_name) LIKE LOWER(?)
-                OR CONCAT(LOWER(first_name), ' ', LOWER(last_name)) LIKE LOWER(?)
-                OR CONCAT(LOWER(last_name), ', ', LOWER(first_name)) LIKE LOWER(?)
+                first_name LIKE ? 
+                OR last_name LIKE ?
+                OR middle_name LIKE ?
+                OR CONCAT(first_name, ' ', last_name) LIKE ?
+                OR CONCAT(last_name, ', ', first_name) LIKE ?
               )
             ORDER BY last_name ASC, first_name ASC
             LIMIT 30
