@@ -2,7 +2,6 @@
 // auth/login_2fa_process.php
 require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/totp.php';
 require_once __DIR__ . '/../includes/log_activity.php';
 require_once __DIR__ . '/../includes/encryption.php';
 
@@ -72,9 +71,9 @@ try {
         throw new Exception('Two-factor authentication is not active on this account.');
     }
 
-    // 3. Verify TOTP Code
-    $decryptedSecret = decrypt_data($user['two_fa_secret']);
-    if (TOTP::verifyCode($decryptedSecret, $code)) {
+    // 3. Verify PIN Code (using standard password_verify on BCRYPT hash)
+    $hashedPin = $user['two_fa_secret'];
+    if (password_verify($code, $hashedPin)) {
         // Success: Clear failed attempts on successful login
         $clearAttemptsStmt = $pdo->prepare("DELETE FROM login_attempts WHERE ip_address = ? AND username = ?");
         $clearAttemptsStmt->execute([$ipAddress, $username]);
@@ -89,6 +88,7 @@ try {
         $_SESSION['theme'] = $_SESSION['temp_2fa_theme'] ?? 'light';
         $_SESSION['font_size'] = $_SESSION['temp_2fa_font_size'] ?? 'normal';
         $_SESSION['must_change_password'] = $_SESSION['temp_2fa_must_change_password'] ?? 0;
+        $_SESSION['two_fa_enabled'] = 1;
         $_SESSION['login_time'] = time();
 
         // Clear temporary variables
@@ -104,7 +104,7 @@ try {
         $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW(), last_login_ip = ? WHERE user_id = ?");
         $updateStmt->execute([$ipAddress, $userId]);
 
-        log_activity($pdo, 'Logged in (2FA Verified)', 'Auth', $userId, 'IP: ' . $ipAddress);
+        log_activity($pdo, 'Logged in (2FA PIN Verified)', 'Auth', $userId, 'IP: ' . $ipAddress);
 
         // Check if forced password reset is active
         if (isset($_SESSION['must_change_password']) && $_SESSION['must_change_password'] == 1) {
@@ -119,7 +119,7 @@ try {
             $_SESSION['alert'] = [
                 'type' => 'success',
                 'title' => 'Welcome Back!',
-                'message' => 'Two-factor code verified successfully.'
+                'message' => 'Security PIN verified successfully.'
             ];
 
             header('Location: ' . BASE_URL . 'index.php');
@@ -135,7 +135,7 @@ try {
         $_SESSION['alert'] = [
             'type' => 'error',
             'title' => 'Verification Failed',
-            'message' => 'The 6-digit authenticator code you entered is invalid or expired. Please try again.'
+            'message' => 'The 6-digit Security PIN you entered is invalid. Please try again.'
         ];
         header('Location: ' . BASE_URL . 'auth/login_2fa.php');
         if (!defined('TESTING')) exit;

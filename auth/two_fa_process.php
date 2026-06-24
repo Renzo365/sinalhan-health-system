@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../includes/auth_guard.php';
 require_once __DIR__ . '/../includes/role_guard.php';
-require_once __DIR__ . '/../includes/totp.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/log_activity.php';
 require_once __DIR__ . '/../includes/encryption.php';
@@ -37,8 +36,8 @@ try {
         throw new Exception('Invalid user session.');
     }
 
-    if (empty($code)) {
-        throw new Exception('Please enter the 6-digit verification code.');
+    if ($action !== 'enable' && empty($code)) {
+        throw new Exception('Please enter the 6-digit PIN.');
     }
 
     $pdo = Database::getInstance()->getConnection();
@@ -53,49 +52,52 @@ try {
     }
 
     if ($action === 'enable') {
-        // Enforce temp secret presence
-        if (empty($_SESSION['temp_2fa_secret'])) {
-            throw new Exception('No pending 2FA secret found. Please restart configuration.');
+        $pin = trim($_POST['pin'] ?? '');
+        $pinConfirm = trim($_POST['pin_confirm'] ?? '');
+
+        if (empty($pin) || empty($pinConfirm)) {
+            throw new Exception('Both PIN and PIN confirmation are required.');
         }
 
-        $secret = $_SESSION['temp_2fa_secret'];
-
-        // Verify the code
-        if (TOTP::verifyCode($secret, $code)) {
-            // Save encrypted secret to database
-            $encryptedSecret = encrypt_data($secret);
-            $updateStmt = $pdo->prepare("UPDATE users SET two_fa_secret = ?, two_fa_enabled = 1 WHERE user_id = ?");
-            $updateStmt->execute([$encryptedSecret, $userId]);
-
-            unset($_SESSION['temp_2fa_secret']);
-            log_activity($pdo, "Enabled Two-Factor Authentication", 'Auth', $userId);
-
-            $_SESSION['alert'] = [
-                'type' => 'success',
-                'title' => '2FA Enabled',
-                'message' => 'Two-factor authentication has been successfully set up and enabled.'
-            ];
-            header('Location: ' . BASE_URL . 'auth/profile.php');
-            if (!defined('TESTING')) exit;
-
-        } else {
-            throw new Exception('Invalid verification code. Please scan the QR code and enter the correct code.');
+        if (!preg_match('/^\d{6}$/', $pin)) {
+            throw new Exception('PIN must be exactly 6 numeric digits.');
         }
+
+        if ($pin !== $pinConfirm) {
+            throw new Exception('PIN and confirmation PIN do not match.');
+        }
+
+        // Hash the PIN and save to DB
+        $hashedPin = password_hash($pin, PASSWORD_BCRYPT);
+        $updateStmt = $pdo->prepare("UPDATE users SET two_fa_secret = ?, two_fa_enabled = 1 WHERE user_id = ?");
+        $updateStmt->execute([$hashedPin, $userId]);
+
+        $_SESSION['two_fa_enabled'] = 1;
+        log_activity($pdo, "Enabled Two-Factor Authentication (PIN)", 'Auth', $userId);
+
+        $_SESSION['alert'] = [
+            'type' => 'success',
+            'title' => '2FA PIN Enabled',
+            'message' => 'Your 6-digit Security PIN has been set up successfully.'
+        ];
+        header('Location: ' . BASE_URL . 'auth/profile.php');
+        if (!defined('TESTING')) exit;
 
     } elseif ($action === 'disable') {
         if (empty($user['two_fa_secret'])) {
             throw new Exception('Two-factor authentication is not active on this account.');
         }
 
-        $secret = decrypt_data($user['two_fa_secret']);
+        $hashedPin = $user['two_fa_secret'];
 
-        // Verify the code
-        if (TOTP::verifyCode($secret, $code)) {
+        // Verify the PIN
+        if (password_verify($code, $hashedPin)) {
             // Disable 2FA
             $updateStmt = $pdo->prepare("UPDATE users SET two_fa_secret = NULL, two_fa_enabled = 0 WHERE user_id = ?");
             $updateStmt->execute([$userId]);
 
-            log_activity($pdo, "Disabled Two-Factor Authentication", 'Auth', $userId);
+            $_SESSION['two_fa_enabled'] = 0;
+            log_activity($pdo, "Disabled Two-Factor Authentication (PIN)", 'Auth', $userId);
 
             $_SESSION['alert'] = [
                 'type' => 'success',
@@ -106,7 +108,7 @@ try {
             if (!defined('TESTING')) exit;
 
         } else {
-            throw new Exception('Invalid verification code. Could not disable 2FA.');
+            throw new Exception('Invalid Security PIN. Could not disable 2FA.');
         }
 
     } else {

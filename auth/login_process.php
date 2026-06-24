@@ -123,6 +123,7 @@ try {
         $_SESSION['theme'] = $user['theme'];
         $_SESSION['font_size'] = $user['font_size'];
         $_SESSION['must_change_password'] = $user['must_change_password'];
+        $_SESSION['two_fa_enabled'] = (int)$user['two_fa_enabled'];
         $_SESSION['login_time'] = time();
 
         // 7. Update last login details in users table

@@ -333,3 +333,49 @@ Stack trace:
 [23-Jun-2026 22:39:02 Asia/Manila] Decryption failed: HMAC signature verification failed (data manipulation suspected).
 [23-Jun-2026 22:49:11 Asia/Manila] Database connection failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
 [23-Jun-2026 22:49:25 Asia/Manila] Database connection failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
+[24-Jun-2026 10:29:48 Asia/Manila] 2FA process exception: Please enter the 6-digit verification code.
+[24-Jun-2026 10:29:54 Asia/Manila] 2FA process exception: Invalid verification code. Please scan the QR code and enter the correct code.
+[24-Jun-2026 10:42:12 Asia/Manila] 2FA verification process error: Too many failed login/2FA attempts. Account locked. Try again after 15 minutes.
+[24-Jun-2026 10:42:22 Asia/Manila] Login processing exception: Too many failed login attempts. Your account/IP is temporarily locked. Please try again after 15 minutes.
+[24-Jun-2026 11:23:13 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 177
+[24-Jun-2026 11:23:13 Asia/Manila] Patient registration failure: First name can only contain letters, spaces, hyphens, and periods.
+[24-Jun-2026 11:23:13 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:23:13 Asia/Manila] Patient registration failure: Birthdate cannot be a future date.
+[24-Jun-2026 11:23:13 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:23:13 Asia/Manila] Patient registration failure: A patient named 'Duplicate User' born on Oct 10, 1990 is already registered.
+[24-Jun-2026 11:23:13 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:23:13 Asia/Manila] Decryption failed: HMAC signature verification failed (data manipulation suspected).
+[24-Jun-2026 11:26:38 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 177
+[24-Jun-2026 11:26:38 Asia/Manila] Patient registration failure: First name can only contain letters, spaces, hyphens, and periods.
+[24-Jun-2026 11:26:38 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:26:38 Asia/Manila] Patient registration failure: Birthdate cannot be a future date.
+[24-Jun-2026 11:26:38 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:26:38 Asia/Manila] Patient registration failure: A patient named 'Duplicate User' born on Oct 10, 1990 is already registered.
+[24-Jun-2026 11:26:38 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:26:38 Asia/Manila] Decryption failed: HMAC signature verification failed (data manipulation suspected).
+[24-Jun-2026 11:35:12 Asia/Manila] 2FA process exception: Invalid verification code. Could not disable 2FA.
+[24-Jun-2026 11:44:11 Asia/Manila] 2FA process exception: Invalid verification code. Could not disable 2FA.
+[24-Jun-2026 11:54:07 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 177
+[24-Jun-2026 11:54:07 Asia/Manila] Patient registration failure: First name can only contain letters, spaces, hyphens, and periods.
+[24-Jun-2026 11:54:07 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:54:07 Asia/Manila] Patient registration failure: Birthdate cannot be a future date.
+[24-Jun-2026 11:54:07 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:54:07 Asia/Manila] Patient registration failure: A patient named 'Duplicate User' born on Oct 10, 1990 is already registered.
+[24-Jun-2026 11:54:07 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:54:07 Asia/Manila] Decryption failed: HMAC signature verification failed (data manipulation suspected).
+[24-Jun-2026 11:54:19 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 177
+[24-Jun-2026 11:54:19 Asia/Manila] Patient registration failure: First name can only contain letters, spaces, hyphens, and periods.
+[24-Jun-2026 11:54:19 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:54:19 Asia/Manila] Patient registration failure: Birthdate cannot be a future date.
+[24-Jun-2026 11:54:19 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:54:19 Asia/Manila] Patient registration failure: A patient named 'Duplicate User' born on Oct 10, 1990 is already registered.
+[24-Jun-2026 11:54:19 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 11:54:19 Asia/Manila] Decryption failed: HMAC signature verification failed (data manipulation suspected).
+[24-Jun-2026 12:22:34 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 177
+[24-Jun-2026 12:22:34 Asia/Manila] Patient registration failure: First name can only contain letters, spaces, hyphens, and periods.
+[24-Jun-2026 12:22:34 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 12:22:34 Asia/Manila] Patient registration failure: Birthdate cannot be a future date.
+[24-Jun-2026 12:22:34 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 12:22:34 Asia/Manila] Patient registration failure: A patient named 'Duplicate User' born on Oct 10, 1990 is already registered.
+[24-Jun-2026 12:22:34 Asia/Manila] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\sinalhan-health-system\tests\run_tests.php:21) in C:\xampp\htdocs\sinalhan-health-system\patients\register_process.php on line 211
+[24-Jun-2026 12:22:34 Asia/Manila] Decryption failed: HMAC signature verification failed (data manipulation suspected).

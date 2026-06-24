@@ -48,8 +48,8 @@ if (empty($_SESSION['csrf_token'])) {
             <div class="login-logo" style="background-color: var(--primary-light);">
                 <i class="bi bi-shield-lock-fill"></i>
             </div>
-            <h1>Two-Factor Auth</h1>
-            <p>Enter the 6-digit code from your authenticator app.</p>
+            <h1>Security PIN Required</h1>
+            <p>Please enter your 6-digit Security PIN to verify your identity.</p>
         </div>
 
         <form action="<?= BASE_URL ?>auth/login_2fa_process.php" method="POST" id="login2faForm">
@@ -58,26 +58,26 @@ if (empty($_SESSION['csrf_token'])) {
 
             <!-- 2FA Code Field -->
             <div class="form-group">
-                <label for="code" class="form-label">Authenticator Code</label>
+                <label for="code" class="form-label">Security PIN</label>
                 <div class="input-group-custom">
-                    <input type="text" 
+                    <input type="password" 
                            id="code" 
                            name="code" 
                            class="form-control-custom text-center" 
-                           placeholder="000000" 
+                           placeholder="••••••" 
                            required 
                            maxlength="6"
                            pattern="\d{6}"
-                           autocomplete="one-time-code" 
+                           inputmode="numeric"
                            autofocus
-                           style="letter-spacing: 6px; font-size: 20px; font-weight: 700;">
-                    <i class="bi bi-key input-icon"></i>
+                           style="letter-spacing: 10px; font-size: 24px; font-weight: 700;">
+                    <i class="bi bi-lock input-icon"></i>
                 </div>
             </div>
 
             <!-- Submit Button -->
             <button type="submit" class="login-btn">
-                <span>Verify Code</span>
+                <span>Confirm PIN</span>
                 <i class="bi bi-check-circle-fill"></i>
             </button>
         </form>

@@ -34,3 +34,27 @@ if (isset($_SESSION['must_change_password']) && $_SESSION['must_change_password'
     }
 }
 
+// Redirect user to 2FA setup page if required by settings and not yet enabled for admin/staff
+if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'staff'])) {
+    if (!isset($_SESSION['two_fa_enabled']) || $_SESSION['two_fa_enabled'] == 0) {
+        require_once __DIR__ . '/../config/database.php';
+        require_once __DIR__ . '/settings_helper.php';
+        
+        $pdo = Database::getInstance()->getConnection();
+        $require2FA = (int)get_setting($pdo, 'require_2fa', 0);
+        
+        if ($require2FA === 1) {
+            $currentScript = basename($_SERVER['SCRIPT_NAME']);
+            if ($currentScript !== 'two_fa.php' && $currentScript !== 'two_fa_process.php' && $currentScript !== 'logout.php') {
+                $_SESSION['alert'] = [
+                    'type' => 'warning',
+                    'title' => '2FA Setup Required',
+                    'message' => 'An administrator has mandated Two-Factor Authentication for your account. Please set up 2FA to continue.'
+                ];
+                header('Location: ' . BASE_URL . 'auth/two_fa.php');
+                exit;
+            }
+        }
+    }
+}
+

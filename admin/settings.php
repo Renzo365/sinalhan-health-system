@@ -216,7 +216,7 @@ if ($isAdmin) {
                                         <div class="form-check form-switch mt-3">
                                             <input class="form-check-input" type="checkbox" role="switch" name="require_2fa" id="require2faSwitch" value="1" <?= $require2FA ? 'checked' : '' ?>>
                                             <label class="form-check-label fw-semibold" for="require2faSwitch">Enforce Multi-Factor Authentication (2FA)</label>
-                                            <small class="text-muted d-block">Forces all staff members to setup Google Authenticator TOTP.</small>
+                                            <small class="text-muted d-block">Forces all administrators and staff members to setup a 6-Digit Security PIN. Barangay Health Workers (BHW) are exempt.</small>
                                         </div>
                                     </div>
                                 </div>

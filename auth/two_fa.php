@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../includes/auth_guard.php';
 require_once __DIR__ . '/../includes/role_guard.php';
-require_once __DIR__ . '/../includes/totp.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/encryption.php';
 
@@ -32,15 +31,6 @@ try {
 
     $is2faEnabled = (int)($user['two_fa_enabled'] ?? 0);
 
-    // If not enabled and no temp secret, generate one
-    if (!$is2faEnabled && empty($_SESSION['temp_2fa_secret'])) {
-        $_SESSION['temp_2fa_secret'] = TOTP::generateSecret();
-    }
-    
-    $secret = $is2faEnabled ? decrypt_data($user['two_fa_secret']) : $_SESSION['temp_2fa_secret'];
-    $qrData = TOTP::getQRUrl($user['username'], $secret);
-    // $qrUrl is deprecated. QR Code is now generated client-side using local qrious.min.js library for Offline-First compliance.
-
 } catch (Exception $e) {
     error_log("2FA settings load failed: " . $e->getMessage());
     $_SESSION['alert'] = [
@@ -61,7 +51,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
     <div class="page-header">
         <div>
             <h2 class="page-title">Two-Factor Authentication (2FA)</h2>
-            <p class="text-secondary mb-0">Secure your account by requiring an authenticator code during login.</p>
+            <p class="text-secondary mb-0">Secure your account by requiring a 6-digit Security PIN during login.</p>
         </div>
         <div>
             <a href="<?= BASE_URL ?>auth/profile.php" class="btn btn-outline-secondary d-flex align-items-center gap-2">
@@ -72,12 +62,12 @@ require_once __DIR__ . '/../includes/sidebar.php';
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-6 col-md-8">
             <div class="card-custom">
                 <div class="card-custom-header">
                     <h3 class="card-custom-title">
                         <i class="bi bi-shield-lock-fill text-primary"></i> 
-                        2FA Configuration Status: 
+                        2FA PIN Status: 
                         <?php if ($is2faEnabled): ?>
                             <span class="badge bg-success ms-2">Enabled</span>
                         <?php else: ?>
@@ -89,76 +79,63 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <div class="card-custom-body p-4">
                     <?php if (!$is2faEnabled): ?>
                         <!-- Setup Flow -->
-                        <div class="row align-items-center g-4">
-                            <div class="col-md-5 text-center border-end">
-                                <h5 class="fw-bold mb-3 text-secondary">Step 1: Scan QR Code</h5>
-                                <div class="bg-white p-3 d-inline-block rounded-3 border mb-2">
-                                    <canvas id="qr-canvas" class="img-fluid" style="width: 200px; height: 200px;"></canvas>
+                        <h5 class="fw-bold mb-3 text-secondary">Set a 6-Digit Security PIN</h5>
+                        <p class="text-secondary small mb-4">
+                            Please choose a secure 6-digit numeric PIN. You will need to enter this PIN every time you log in to your account.
+                        </p>
+
+                        <form action="<?= BASE_URL ?>auth/two_fa_process.php" method="POST" class="needs-validation" novalidate id="setupPinForm">
+                            <input type="hidden" name="action" value="enable">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            
+                            <div class="mb-3">
+                                <label for="pin" class="form-label fw-semibold">Choose 6-Digit PIN</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                    <input type="password" 
+                                           name="pin" 
+                                           id="pin" 
+                                           class="form-control text-center fw-bold" 
+                                           placeholder="••••••" 
+                                           required 
+                                           maxlength="6" 
+                                           pattern="\d{6}"
+                                           inputmode="numeric"
+                                           style="letter-spacing: 6px; font-size: 18px;">
                                 </div>
-                                <!-- 
-                                  Offline-First QR Code Generation (Capstone Defense Documentation):
-                                  Previously, QR codes were drawn using the external api.qrserver.com HTTP service.
-                                  To prevent dependency on an internet connection and protect clinic security,
-                                  we migrated to a fully localized setup using QRious.js to render the QR code 
-                                  entirely client-side on an HTML5 canvas element.
-                                -->
-                                <script src="<?= BASE_URL ?>assets/vendor/qrious/qrious.min.js"></script>
-                                <script>
-                                    (function() {
-                                        new QRious({
-                                            element: document.getElementById('qr-canvas'),
-                                            value: '<?= $qrData ?>',
-                                            size: 200
-                                        });
-                                    })();
-                                </script>
-                                <div class="mt-2">
-                                    <small class="text-secondary d-block">Or enter secret key manually:</small>
-                                    <code class="fw-bold fs-6 text-teal" style="letter-spacing: 1px;"><?= chunk_split($secret, 4, ' ') ?></code>
+                                <div class="invalid-feedback">Please enter exactly 6 numeric digits.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="pin_confirm" class="form-label fw-semibold">Confirm 6-Digit PIN</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-check-circle-fill"></i></span>
+                                    <input type="password" 
+                                           name="pin_confirm" 
+                                           id="pin_confirm" 
+                                           class="form-control text-center fw-bold" 
+                                           placeholder="••••••" 
+                                           required 
+                                           maxlength="6" 
+                                           pattern="\d{6}"
+                                           inputmode="numeric"
+                                           style="letter-spacing: 6px; font-size: 18px;">
                                 </div>
+                                <div class="invalid-feedback">Please confirm your 6-digit PIN.</div>
                             </div>
                             
-                            <div class="col-md-7">
-                                <h5 class="fw-bold mb-3 text-secondary">Step 2: Enter Verification Code</h5>
-                                <p class="text-secondary small">
-                                    Install Google Authenticator, Authy, or Microsoft Authenticator app on your mobile device. Scan the QR code, then enter the 6-digit verification code below to verify setup.
-                                </p>
-
-                                <form action="<?= BASE_URL ?>auth/two_fa_process.php" method="POST" class="needs-validation" novalidate>
-                                    <input type="hidden" name="action" value="enable">
-                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                    
-                                    <div class="mb-4">
-                                        <label for="code" class="form-label font-weight-bold">6-Digit Verification Code</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-key"></i></span>
-                                            <input type="text" 
-                                                   name="code" 
-                                                   id="code" 
-                                                   class="form-control text-center fw-bold" 
-                                                   placeholder="000000" 
-                                                   required 
-                                                   maxlength="6" 
-                                                   pattern="\d{6}"
-                                                   style="letter-spacing: 4px; font-size: 18px;">
-                                        </div>
-                                        <small class="text-secondary d-block mt-1">Codes change every 30 seconds.</small>
-                                    </div>
-                                    
-                                    <div class="d-flex justify-content-end gap-2">
-                                        <a href="<?= BASE_URL ?>auth/profile.php" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
-                                        <button type="submit" class="btn btn-primary px-5 py-2">Enable 2FA</button>
-                                    </div>
-                                </form>
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="<?= BASE_URL ?>auth/profile.php" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary px-5 py-2">Enable 2FA PIN</button>
                             </div>
-                        </div>
+                        </form>
 
                     <?php else: ?>
                         <!-- Disable Flow -->
                         <div class="p-3 bg-light rounded-3 mb-4 border border-warning">
                             <h5 class="fw-bold text-dark"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Warning</h5>
                             <p class="text-secondary small mb-0">
-                                Disabling two-factor authentication removes the secondary login security guard. Your account will only be protected by your password.
+                                Disabling two-factor authentication removes the secondary login security PIN guard. Your account will only be protected by your password.
                             </p>
                         </div>
 
@@ -167,24 +144,26 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             
                             <div class="mb-4">
-                                <label for="code" class="form-label font-weight-bold">Confirm code to disable 2FA</label>
+                                <label for="pin" class="form-label fw-semibold">Enter your 6-Digit Security PIN to Disable</label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-key"></i></span>
-                                    <input type="text" 
+                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                    <input type="password" 
                                            name="code" 
-                                           id="code" 
+                                           id="pin" 
                                            class="form-control text-center fw-bold" 
-                                           placeholder="000000" 
+                                           placeholder="••••••" 
                                            required 
                                            maxlength="6" 
                                            pattern="\d{6}"
-                                           style="letter-spacing: 4px; font-size: 18px;">
+                                           inputmode="numeric"
+                                           style="letter-spacing: 6px; font-size: 18px;">
                                 </div>
+                                <div class="invalid-feedback">Please enter your 6-digit PIN.</div>
                             </div>
                             
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="<?= BASE_URL ?>auth/profile.php" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
-                                <button type="submit" class="btn btn-danger px-5 py-2">Disable 2FA</button>
+                                <button type="submit" class="btn btn-danger px-5 py-2">Disable 2FA PIN</button>
                             </div>
                         </form>
                     <?php endif; ?>
@@ -193,6 +172,30 @@ require_once __DIR__ . '/../includes/sidebar.php';
         </div>
     </div>
 </main>
+
+<script>
+    // Form verification for PIN match
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('setupPinForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                const pin = document.getElementById('pin').value;
+                const pinConfirm = document.getElementById('pin_confirm').value;
+                
+                if (pin !== pinConfirm) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'PIN Match Error',
+                        text: 'The selected 6-digit PIN and confirmation PIN do not match.'
+                    });
+                }
+            });
+        }
+    });
+</script>
 
 <?php
 require_once __DIR__ . '/../includes/alert.php';
